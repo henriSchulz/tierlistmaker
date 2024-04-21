@@ -1,0 +1,13 @@
+{
+    "theme_color": "#2563eb",
+    "background_color": "#2563eb",
+    "display": "browser",
+    "scope": "/",
+    "start_url": "/",
+    "name": "Tierlistmaker",
+    "description": "Tier lists are like shelves for your opinions. You rank things you like, putting the best on the highest shelf and the least favorite on the bottom. Easy!",
+    "short_name": "Tierlistmaker",
+    "icons": {
+        "name": "icon.png"
+    }
+}
