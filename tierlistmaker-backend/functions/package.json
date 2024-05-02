@@ -5,7 +5,7 @@
     "build:full": "tsc && node postBuilder.js",
     "build:post": "node postBuilder.js",
     "build:watch": "tsc --watch",
-    "serve": "firebase emulators:start --only functions ",
+    "serve": "npm run build && firebase emulators:start --only functions ",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
@@ -23,6 +23,8 @@
     "@types/sharp": "^0.32.0",
     "@types/sqlite3": "^3.1.11",
     "@types/winston": "^2.4.4",
+    "axios": "^1.6.8",
+    "cheerio": "^1.0.0-rc.12",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
@@ -31,10 +33,16 @@
     "firebase": "^10.11.0",
     "firebase-admin": "^10.3.0",
     "firebase-functions": "^4.9.0",
+    "i": "^0.3.7",
+    "images-scraper": "^6.4.6",
+    "node-fetch": "^3.3.2",
+    "node-html-to-image": "^4.0.0",
+    "npm": "^10.6.0",
     "sharp": "^0.32.6",
     "winston": "^3.13.0"
   },
   "devDependencies": {
+    "puppeteer": "^16.2.0",
     "typescript": "^4.6.4"
   },
   "private": true

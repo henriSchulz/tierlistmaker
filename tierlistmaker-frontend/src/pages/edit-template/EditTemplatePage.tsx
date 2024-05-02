@@ -13,20 +13,26 @@ import TierlistRow from "@/types/dbmodel/TierlistRow";
 import EditTemplateController from "@/pages/edit-template/EditTemplateController";
 import Tierlist from "@/types/dbmodel/Tierlist";
 import {useNavigate, useParams, useSearchParams} from "react-router-dom";
-import {Button} from "@/components/ui/button";
+import {Button, buttonVariants} from "@/components/ui/button";
 import EditTierlistItem from "@/pages/edit-template/components/EditTierlistItem";
 import CreateTemplatePageController from "@/pages/create-template/CreateTemplatePageController";
-import {Image, Minus, Plus} from "lucide-react";
+import {Image as LImage, Minus, Plus} from "lucide-react";
 import {Skeleton} from "@/components/ui/skeleton";
 import {PathUtils} from "@/Paths";
 import UploadImageItem from "@/pages/create-template/components/UploadImageItem";
 import {useAuthDone} from "@/App";
+import GoogleImageSearchModal from "@/features/google-images-search/GoogleImageSearchModal";
+import GoogleImageSearchController from "@/features/google-images-search/GoogleImageSearchController";
+import {urlToFile} from "@/utils";
+import Google from "@/assets/google.svg";
+import {cn} from "@/lib/utils";
 
 
 export default function () {
     const {id} = useParams()
 
     const [tierlist, setTierlist] = useState<Tierlist | null>(null)
+    const [loading, setLoading] = useState(false)
     const [tierlistName, setTierlistName] = useState("")
     const [tierlistDescription, setTierlistDescription] = useState("")
     const [isPublicTierlist, setIsPublicTierlist] = useState(false)
@@ -38,12 +44,18 @@ export default function () {
     const [searchParams, setSearchParams] = useSearchParams();
     const [numberOfRows, setNumberOfRows] = useState(0)
     const [initDone, setInitDone] = useState(false)
+    const [showSearchGoogleImagesModal, setShowSearchGoogleImagesModal] = useState(false)
+    const [showSearchGoogleImagesModal2, setShowSearchGoogleImagesModal2] = useState(false)
+    const [searchInput, setSearchInput] = useState("")
+    const [currentImages, setCurrentImages] = useState<{ src: string, title: string }[]>([])
+    const [selectedImages, setSelectedImages] = useState<{ src: string, title: string }[]>([])
 
     const navigate = useNavigate()
     const authDone = useAuthDone()
 
     const controller = new EditTemplateController({
         states: {
+            loadingState: {val: loading, set: setLoading},
             tierlistNameState: {val: tierlistName, set: setTierlistName},
             tierlistDescriptionState: {val: tierlistDescription, set: setTierlistDescription},
             publicTemplateState: {val: isPublicTierlist, set: setIsPublicTierlist},
@@ -64,6 +76,46 @@ export default function () {
         controller.init(id)
     }, [authDone, id])
 
+    const googleImageSearchController = new GoogleImageSearchController({
+        multiple: false,
+        defaultSearch: tierlist?.name,
+        setImages: async images => {
+            const file = await urlToFile(images[0].src, images[0].title)
+            setTemplateCoverImageToUpdate(file)
+            // set the file to the cover-image file input
+
+            const input = document.getElementById("cover-image") as HTMLInputElement
+
+            const files = new DataTransfer()
+            files.items.add(file)
+            input.files = files.files
+        },
+        states: {
+            showState: {val: showSearchGoogleImagesModal, set: setShowSearchGoogleImagesModal},
+            searchInput: {val: searchInput, set: setSearchInput},
+            currentImages: {val: currentImages, set: setCurrentImages},
+            loadingState: {val: loading, set: setLoading},
+            selectedImagesState: {val: selectedImages, set: setSelectedImages}
+        }
+    })
+
+    const googleImageSearchController2 = new GoogleImageSearchController({
+        multiple: true,
+        defaultSearch: tierlist?.name,
+        setImages: async images => {
+            const files = await Promise.all(images.map(async image => await urlToFile(image.src, image.title)))
+            setTemplateImagesToAdd(prev => [...prev, ...files])
+            setTemplateImagesToAdd(prev => [...prev, ...files])
+        },
+        states: {
+            showState: {val: showSearchGoogleImagesModal2, set: setShowSearchGoogleImagesModal2},
+            searchInput: {val: searchInput, set: setSearchInput},
+            currentImages: {val: currentImages, set: setCurrentImages},
+            loadingState: {val: loading, set: setLoading},
+            selectedImagesState: {val: selectedImages, set: setSelectedImages}
+        }
+    })
+
     const updateSearchParams = (tab: string) => {
         const searchParams = new URLSearchParams()
         searchParams.set("tab", tab)
@@ -73,6 +125,12 @@ export default function () {
 
 
     return <Box className="w-full">
+
+
+        {showSearchGoogleImagesModal && <GoogleImageSearchModal controller={googleImageSearchController}/>}
+        {showSearchGoogleImagesModal2 && <GoogleImageSearchModal controller={googleImageSearchController2}/>}
+
+
         <Tabs onValueChange={updateSearchParams} defaultValue={searchParams.get("tab") ?? "1"}
               className="w-full mt-3 grid place-items-center">
             <TabsList className="grid w-11/12 lg:w-2/3 grid-cols-3">
@@ -132,7 +190,7 @@ export default function () {
                                 {!initDone && <Skeleton className="h-[104px] w-full"/>}
                             </Box>
 
-                            <Button disabled={!initDone} className="w-full mt-4"
+                            <Button disabled={!initDone || loading} className="w-full mt-4"
                                     onClick={controller.onUpdateGeneralInformation}>
                                 {Texts.SAVE_CHANGES}
                             </Button>
@@ -165,10 +223,18 @@ export default function () {
                         <CardContent>
                             <Box className="">
                                 <Label htmlFor="cover-image">{Texts.COVER_IMAGE}</Label>
-                                <Input accept="image/png, image/jpeg"
-                                       onChange={e => setTemplateCoverImageToUpdate(e.target.files?.[0] || null)}
-                                       id="cover-image"
-                                       type="file"/>
+                                <div className="flex justify-center items-center">
+                                    <Input accept="image/png, image/jpeg" placeholder="COVER IMAGES"
+
+                                           onChange={e => setTemplateCoverImageToUpdate(e.target.files?.[0] || null)}
+                                           id="cover-image"
+                                           type="file"/>
+
+                                    <Button variant="secondary" onClick={googleImageSearchController.open}
+                                            className="ml-2">
+                                        <img src={Google} height={30} width={30}/>
+                                    </Button>
+                                </div>
                             </Box>
                             <Box className="mt-4">
                                 <h3 className="text-xl font-bold">{Texts.CURRENT_TEMPLATE_IMAGES}</h3>
@@ -196,12 +262,24 @@ export default function () {
                                     </ul>
 
                                     <Box>
-                                        <Button onClick={() => document.getElementById("template-images")?.click()}
-                                                variant="secondary"
-                                                className="mt-4 w-full">
-                                            <Image className="mr-2"/>
-                                            {Texts.UPLOAD_IMAGES}
-                                        </Button>
+                                        <div className="flex justify-center items-center mt-3">
+                                            <div
+                                                onClick={() => document.getElementById("template-images")?.click()}
+                                                className={cn(buttonVariants({
+                                                    variant: "secondary",
+                                                    size: "default"
+                                                }), "transition w-full")}>
+                                                <LImage className="mr-2"/>
+                                                {Texts.UPLOAD_IMAGES}
+
+                                            </div>
+
+                                            <Button variant="secondary" onClick={googleImageSearchController2.open}
+                                                    className="ml-2">
+                                                <img src={Google} height={30} width={30}/>
+                                            </Button>
+
+                                        </div>
 
                                         <Box className="flex flex-wrap mt-3">
                                             {templateImagesToAdd.map((image, index) => (
@@ -213,7 +291,7 @@ export default function () {
                                             ))}
                                         </Box>
 
-                                        <input style={{display: "none"}} accept="image/png, image/jpeg"
+                                        <input style={{display: "none"}} accept=".png, .jpg, .jpeg, .gif"
                                                onChange={controller.onFileUploadImageChange}
                                                className="mt-4"
                                                id="template-images"
@@ -223,7 +301,7 @@ export default function () {
 
                             </Box>
 
-                            <Button onClick={controller.onUpdateImages} disabled={!initDone}
+                            <Button onClick={controller.onUpdateImages} disabled={!initDone || loading}
                                     className="w-full mt-4">
                                 {Texts.SAVE_CHANGES}
                             </Button>
@@ -282,7 +360,7 @@ export default function () {
                                 ))}
                             </Box>
 
-                            <Button onClick={controller.onUpdateRows} disabled={!initDone}
+                            <Button onClick={controller.onUpdateRows} disabled={!initDone || loading}
                                     className="w-full mt-4">
                                 {Texts.SAVE_CHANGES}
                             </Button>

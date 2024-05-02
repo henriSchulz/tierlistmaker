@@ -12,6 +12,7 @@ import LiteTierlist from "@/types/LiteTierlist";
 import TierListCard, {TierlistCardSkeleton} from "@/pages/home/components/TierListCard";
 import {Skeleton} from "@/components/ui/skeleton";
 import {useAuthDone} from "@/App";
+import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
 
 
 export default function () {
@@ -74,25 +75,24 @@ export default function () {
 
                     <Box>
                         <h3 className="text-3xl mt-10 font-bold">{Texts.MY_TIER_LIST_TEMPLATES}</h3>
+                        <ScrollArea className="w-full whitespace-nowrap gap-4">
+                            <Box className="flex w-max space-x-4 p-4">
+                                {initDone && clientTemplates.map((template, index) => (
+                                    <TierListCard key={index} tierlist={template}/>
+                                ))}
 
-                        <Box className="flex flex-wrap mt-4 space-x-4">
-                            {initDone && clientTemplates.map((template, index) => (
-                                <TierListCard key={index} tierlist={template}/>
-                            ))}
+                                {!initDone && Array.from({length: 3}).map((_, index) => (
+                                    <TierlistCardSkeleton key={index}/>
+                                ))}
 
-                            {!initDone && Array.from({length: 3}).map((_, index) => (
-                                <TierlistCardSkeleton key={index}/>
-                            ))}
-
-                            {initDone && clientTemplates.length === 0 && (
-                                <Box className="w-full mt-4 text-center">
-                                    <p>{Texts.NO_TEMPLATES_CREATED_YET}</p>
-                                </Box>
-                            )}
-
-
-                        </Box>
-
+                                {initDone && clientTemplates.length === 0 && (
+                                    <Box className="w-full mt-4 text-center">
+                                        <p>{Texts.NO_TEMPLATES_CREATED_YET}</p>
+                                    </Box>
+                                )}
+                            </Box>
+                            <ScrollBar orientation="horizontal"/>
+                        </ScrollArea>
                     </Box>
 
                 </CardContent>

@@ -6,7 +6,8 @@ export default interface Tierlist extends BaseModel {
     readonly name: string
     readonly description: string
     readonly categoryId: string
-    readonly public: number //Boolean 0 or 1
+    readonly public: boolean
     readonly votes: number
+    showImageNames: boolean
 
 }

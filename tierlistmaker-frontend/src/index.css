@@ -58,7 +58,6 @@
 
     body {
         @apply bg-background text-foreground;
-        user-select: none;
     }
 }
 
@@ -73,8 +72,7 @@
 
 .tier-list-item-text {
     color: #fff;
-    text-shadow: 2px 2px 0px #1E9EE6, 4px 4px 0px rgba(0,0,0,0.25);
-
+    text-shadow: 2px 2px 0px #1E9EE6, 4px 4px 0px rgba(0, 0, 0, 0.25);
 
 
     position: absolute;;

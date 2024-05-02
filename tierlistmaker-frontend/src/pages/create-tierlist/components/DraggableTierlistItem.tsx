@@ -1,8 +1,11 @@
 import CreateTierlistController from "@/pages/create-tierlist/CreateTierlistController";
 import TierlistItem from "@/types/dbmodel/TierlistItem";
-import {DragEvent, useState} from "react";
+import {DragEvent, useEffect, useState} from "react";
 import {motion} from "framer-motion";
 import {Skeleton} from "@/components/ui/skeleton";
+import {getDownloadURL, ref} from "@firebase/storage";
+import {storage} from "@/config/firebaseConfig";
+import {isXsWindow} from "@/utils";
 
 interface DraggableTierlistItemProps {
     item: TierlistItem & { rowId: string }
@@ -12,13 +15,24 @@ interface DraggableTierlistItemProps {
     showImageNames: boolean
 }
 
-export const IMAGE_HEIGHT = 100;
+export const IMAGE_HEIGHT = isXsWindow() ? 80 : 100;
 
 
-export default function ({item, controller, handleDragStart, showImageNames}: DraggableTierlistItemProps) {
+export default function ({item, handleDragStart, showImageNames}: DraggableTierlistItemProps) {
 
 
     const [imageLoaded, setImageLoaded] = useState<boolean>(false)
+    const [imgSrc, setImgSrc] = useState<string>("")
+
+    useEffect(() => {
+
+        const isGif = item.id.startsWith("g_")
+
+        getDownloadURL(ref(storage, `${item.tierlistId}/items/${item.id}${isGif ? ".gif" : ".png"}`)).then(url => {
+            setImgSrc(url)
+        })
+
+    }, [item.id])
 
     return <div className="flex flex-row relative">
         <DropIndicator beforeId={item.id} rowId={item.rowId}/>
@@ -34,15 +48,16 @@ export default function ({item, controller, handleDragStart, showImageNames}: Dr
                 key={item.id}
                 height={IMAGE_HEIGHT} width={IMAGE_HEIGHT}
                 alt={item.name}
-                src={controller.getTierlistItemImageUrl(controller.states.tierlistState.val!.id, item.id)}
+                src={imgSrc}
                 className={`aspect-square object-fill object-center selector`}
                 style={{display: imageLoaded ? 'block' : 'none'}}
             />
 
             {!imageLoaded && <Skeleton style={{width: IMAGE_HEIGHT, height: IMAGE_HEIGHT}}/>}
-            {showImageNames && <div className="tier-list-item-text" style={{maxWidth: IMAGE_HEIGHT - 5}}>
-                {item.name}
-            </div>}
+            {showImageNames &&
+                <div className="tier-list-item-text text-xs text-center" style={{maxWidth: IMAGE_HEIGHT - 5}}>
+                    {item.name}
+                </div>}
         </motion.div>
     </div>
 }

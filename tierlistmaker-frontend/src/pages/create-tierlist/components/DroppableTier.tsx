@@ -9,6 +9,7 @@ import {DragEvent, useState} from "react";
 import TierlistItem from "@/types/dbmodel/TierlistItem";
 import {motion} from "framer-motion";
 import CreateTemplatePageController from "@/pages/create-template/CreateTemplatePageController";
+import {isXsWindow} from "@/utils";
 
 
 interface DroppableTierProps {
@@ -141,6 +142,10 @@ export default function ({row, controller, color, handleDragStart, hideLabel, sh
 
     const filteredItems = controller.states.tierlistDataState.val!.filter((item) => item.rowId === row.id);
 
+
+    const boxSize = isXsWindow() ? 80 : 100;
+
+
     return <motion.div
         layout layoutId={row.id}
     >
@@ -149,15 +154,20 @@ export default function ({row, controller, color, handleDragStart, hideLabel, sh
                 backgroundColor: color,
                 display: "grid",
                 placeItems: "center",
-                alignItems: "center"
-            }} className="w-32 border-r p-2 font-bold rounded text-center min-h-[100px]">
+                alignItems: "center",
+                minHeight: `${boxSize}px`,
+                width: `${boxSize+20}px`
+            }}
+                                className="overflow-hidden break-all border-r p-2 font-bold rounded text-center dark:text-black">
                 {row && row.name.length > 0 ? row.name : CreateTemplatePageController.DEFAULT_ROW_NAMES[row.rowNumber]}
+
             </div>}
             <Box
                 onDrop={handleDragEnd}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
-                className={`w-full min-h-[100px] ${active ? "bg-gray-300/50" : "bg-gray-300/0"} flex flex-wrap`}>
+                style={{minHeight: `${boxSize}px`}}
+                className={`w-full ${active ? "bg-gray-300/50" : "bg-gray-300/0"} flex flex-wrap`}>
                 {filteredItems.map((item, index) => {
                     return <DraggableTierlistItem
                         key={item.id}

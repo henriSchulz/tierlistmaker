@@ -16,6 +16,7 @@ export class TierlistEntityStore extends EntityStore<Tierlist> {
             categoryId: {type: "string", limit: 200},
             public: {type: "boolean", limit: 1},
             lastModifiedAt: {type: "number", limit: 10e20},
+            showImageNames: {type: "boolean", limit: 1}
         }
         super("tierlists", storeSchema, database, MAX_TIER_LISTS);
     }

@@ -37,7 +37,7 @@ const en: TextKeys = {
     CATEGORY: "Category",
     COVER_IMAGE: "Cover Image",
     SELECT_IMAGES_TEXT: "Choose pictures for your tier list",
-    CHOOSE_ALL_IMAGES_AT_ONCE: "Choose all you want to upload at once. Max upload of 50 images or 50MB. You can add more later (Up to 200 images in a template).",
+    CHOOSE_ALL_IMAGES_AT_ONCE: "Choose all you want to upload. Max upload of 50 images or 50MB. You can add more later (Up to 200 images in a template).",
     USE_CONSISTENT_IMAGES: "For best results, use images that are all the same size and square-shaped",
     MINIMUM_IMAGE_AMOUNT: "You'll need at least 4 images to create a template",
     ROW_NAMES: "Row Names",
@@ -131,6 +131,33 @@ const en: TextKeys = {
     SHOW_IMAGE_NAMES: "Show Image Names",
     UPLOAD_IMAGES: "Upload Images",
     IMAGE_NAME_INFO: "Use the image name to help you remember what each image is. This name will be visible on the tier list if you choose to show image names.",
+    COOKIE_CONSENT_FORCE: "You must accept cookies to use this website.",
+    WE_USE_COOKIES: "We use cookies",
+    WE_USE_COOKIE_DESCRIPTION: "We use cookies to ensure you get the best experience on our website.",
+    BY_CLICKING_ACCEPT: `
+    <span class="text-xs">By clicking "<span
+                                class="font-medium opacity-80">Accept</span>", you agree to our use of cookies.</span>
+    `,
+    ACCEPT: "Accept",
+    DECLINE: "Decline",
+    SHARE_DIRECTLY: "Share Directly",
+    SHARE_TEMPLATE: "Share Template",
+    SHARE_TIERLIST_TEXT: "Tierlistmaker.org | {name}. Rank here: {url}",
+    DROP_IMAGE: "Drop Image here",
+    USER_RANKING_TITLE: "{name}'s Raking of {tierlist}",
+    SHARE_YOUR_RANKING: "Share your ranking",
+    LINK_COPIED: "Link copied to clipboard.",
+    CLOSE: "Close",
+    RANK_YOURSELF: "Rank it yourself",
+    GOOGLE_IMAGE_SEARCH: "Search Images on Google",
+    LOADING_IMAGES_FOR: "Loading images from google",
+    NO_IMAGES_FOUND: "Could not find any images for {q} on Google",
+    SUCCESSFULLY_LOADED_IMAGES: "Successfully loaded images",
+    ADD_IMAGES: "Add Image(s)",
+    ADDED_IMAGES: "Image(s) added",
+    ADDING_IMAGES: "Adding Image(s)",
+    GOOGLE_IMAGES: "Google Images",
+    FAILED_TO_ADD_IMAGES: "Failed to add image(s)",
 
 
     formatDate: (date: Date) => {

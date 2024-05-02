@@ -1,8 +1,11 @@
 import State from "@/types/State";
 import LiteTierlist from "@/types/LiteTierlist";
-import ApiService from "@/services/ApiService";
 import {toast} from "sonner";
 import Texts from "@/text/Texts";
+import {collection, getDocs, query, where} from "@firebase/firestore";
+import {firestore} from "@/config/firebaseConfig";
+import Tierlist from "@/types/dbmodel/Tierlist";
+import Vote from "@/types/dbmodel/Vote";
 
 interface HomePageControllerOptions {
     states: {
@@ -21,20 +24,53 @@ export default class HomePageController {
         this.states = options.states
     }
 
-    init = async () => {
-        const {success, tierlists} = await ApiService.loadMostVotedTierlists()
-        const {success: successSports, tierlists: sportsTierlists} = await ApiService.loadMostVotedTierlistsByCategory("SPORTS")
-        const {success: successVideoGames, tierlists: videoGamesTierlists} = await ApiService.loadMostVotedTierlistsByCategory("VIDEO_GAMES")
+    loadMostVotedTierlists = async (tierlists: Tierlist[], votes: Vote[]): Promise<LiteTierlist[]> => {
+        const tierlistVotes: Record<string, number> = {}
 
-        if (success && successSports && successVideoGames) {
-            this.states.mostVotedTierlistsState.set(tierlists)
-            this.states.mostVotedSportsTierlistsState.set(sportsTierlists)
-            this.states.mostVotedVideoGamesTierlistsState.set(videoGamesTierlists)
-            this.states.initDoneState.set(true)
-        } else {
-            toast.error(Texts.API_REQUEST_FAILED)
+        for (const tierlist of tierlists) {
+            tierlistVotes[tierlist.id] = votes.filter(vote => vote.tierlistId === tierlist.id).length
         }
+
+        const sortedTierlistVotes = Object.entries(tierlistVotes)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+
+        return sortedTierlistVotes.map(([tierlistId]) => ({
+            id: tierlistId,
+            name: tierlists.find(tierlist => tierlist.id === tierlistId)!.name
+        }))
+
+
     }
 
+    init = async () => {
 
+
+        try {
+            const votesQuery = query(collection(firestore, "votes"))
+
+            const votesSnapshot = await getDocs(votesQuery)
+
+            const votes = votesSnapshot.docs.map(doc => doc.data() as Vote)
+
+            const tierlistsSnapshot = await getDocs(
+                query(collection(firestore, "tierlists"), where("public", "==", true))
+            )
+
+            const tierlists = tierlistsSnapshot.docs.map(doc => doc.data() as Tierlist)
+            const mostVotedTierlists = await this.loadMostVotedTierlists(tierlists, votes)
+            const mostVotedSportsTierlists = await this.loadMostVotedTierlists(tierlists.filter(tierlist => tierlist.categoryId === "SPORTS"), votes)
+            const mostVotedVideoGamesTierlists = await this.loadMostVotedTierlists(tierlists.filter(tierlist => tierlist.categoryId === "VIDEO_GAMES"), votes)
+
+            this.states.mostVotedTierlistsState.set(mostVotedTierlists)
+            this.states.mostVotedSportsTierlistsState.set(mostVotedSportsTierlists)
+            this.states.mostVotedVideoGamesTierlistsState.set(mostVotedVideoGamesTierlists)
+            this.states.initDoneState.set(true)
+
+        } catch (e) {
+            toast.error(Texts.API_REQUEST_FAILED)
+        }
+
+
+    }
 }

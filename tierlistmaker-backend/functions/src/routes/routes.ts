@@ -50,12 +50,19 @@ export async function getTemplateItem(req: express.Request, res: express.Respons
     }
     if (!tierlist) return res.status(404).json({error: "Tierlist not found"})
     try {
-        const file = app.bucket.file(`${tierlistId}/items/${itemId}.png`)
+        let isGif = itemId.startsWith("g_");
+        let file;
+
+        if (isGif) {
+            file = app.bucket.file(`${tierlistId}/items/${itemId}.gif`)
+        } else {
+            file = app.bucket.file(`${tierlistId}/items/${itemId}.png`)
+        }
 
         const [exists] = await file.exists()
         if (!exists) return res.status(404).json({error: "Template image not found"})
         const [buffer] = await file.download()
-        res.setHeader('Content-Type', `image/png`);
+        res.setHeader('Content-Type', `image/${isGif ? "gif" : "png"}`);
         return res.send(buffer);
     } catch (e) {
         logger.error("Failed to get template image: " + e)
@@ -122,6 +129,7 @@ export async function createTierlistTemplate(req: express.Request, res: express.
         categoryId: string
         "rowNames": string
         publicTemplate: number
+        showImageNames: number
     }
 
 
@@ -150,6 +158,7 @@ export async function createTierlistTemplate(req: express.Request, res: express.
     if (body.categoryId.trim().length === 0) return res.status(422).json({error: "No category selected"})
     if (!CATEGORIES.includes(body.categoryId)) return res.status(422).json({error: "Invalid category selected"})
     if (!body.publicTemplate) return res.status(422).json({error: "No publicTemplate provided"})
+    if (!body.showImageNames) return res.status(422).json({error: "No showImageNames provided"})
 
 
     // @ts-ignore
@@ -173,7 +182,7 @@ export async function createTierlistTemplate(req: express.Request, res: express.
     for (const img of templateImgs) {
         const size = Buffer.byteLength(img.buffer)
         if (size > 10 * 1024 * 1024) return res.status(422).json({error: "Template image too large: " + img.originalname})
-        if (img.originalname.split(".")[0].length > 34) return res.status(422).json({error: "Template image name too long: " + img.originalname})
+        // if (img.originalname.split(".")[0].length > 34) return res.status(422).json({error: "Template image name too long: " + img.originalname})
     }
 
     const sizeSum = templateImgs.reduce((acc, img) => acc + Buffer.byteLength(img.buffer), 0)
@@ -182,18 +191,17 @@ export async function createTierlistTemplate(req: express.Request, res: express.
 
     const tierlistId = generateModelId()
 
-
     // save cover image file to tierlist folder
 
     try {
         const fileType = coverImg.originalname.split(".").pop()
 
         if (!fileType) return res.status(422).json({error: "Invalid cover image format"})
-        const allowedFileTypes = ["png", "jpg", "jpeg"]
-        if (!allowedFileTypes.includes(fileType.toLowerCase())) return res.status(422).json({error: "Invalid cover image format"})
+        // const allowedFileTypes = ["png", "jpg", "jpeg", "heic"]
+        // if (!allowedFileTypes.includes(fileType.toLowerCase())) return res.status(422).json({error: "Invalid cover image format"})
 
         let buffer: Buffer = await sharp(coverImg.buffer).toFormat("png").resize(250, 250).png({
-            compressionLevel: 5,
+            compressionLevel: 3,
             force: true
         }).toBuffer()
 
@@ -207,24 +215,41 @@ export async function createTierlistTemplate(req: express.Request, res: express.
     const tierListItems: TierlistItem[] = []
 
     for (const img of templateImgs) {
-        const itemId = generateModelId()
+        let itemId = generateModelId()
         try {
             const fileType = img.originalname.split(".").pop()
 
             if (!fileType) return res.status(422).json({error: "Invalid cover image format"})
-            const allowedFileTypes = ["png", "jpg", "jpeg"]
-            if (!allowedFileTypes.includes(fileType.toLowerCase())) return res.status(422).json({error: "Invalid cover image format"})
+            // const allowedFileTypes = ["png", "jpg", "jpeg", "gif", "heic"]
+            // if (!allowedFileTypes.includes(fileType.toLowerCase())) return res.status(422).json({error: "Invalid cover image format"})
 
-            let buffer: Buffer = await sharp(img.buffer).toFormat("png").resize(100, 100).png({
-                compressionLevel: 5,
-                force: true
-            }).toBuffer()
-            await app.bucket.file(`${tierlistId}/items/${itemId}.png`).save(buffer, {contentType: `image/png`})
+
+            let buffer: Buffer;
+            let contentType: string;
+            let path: string;
+
+            if (fileType.toLowerCase() === "gif") {
+                //remove first two characters
+                itemId = "g_" + itemId.slice(2)
+                buffer = img.buffer
+                contentType = `image/gif`
+                path = `${tierlistId}/items/${itemId}.gif`
+            } else {
+                buffer = await sharp(img.buffer).toFormat("png").resize(100, 100).png({
+                    compressionLevel: 5,
+                    force: true
+                }).toBuffer()
+                contentType = `image/png`
+                path = `${tierlistId}/items/${itemId}.png`
+            }
+
+            await app.bucket.file(path).save(buffer, {contentType})
 
 
             let fileName = Buffer.from(img.originalname, 'latin1').toString('utf8');
             const fileExtension = fileName.split(".").pop()
             fileName = fileName.replace(`.${fileExtension}`, "")
+            if (fileName.length > 34) fileName = fileName.slice(0, 34)
 
             const item: TierlistItem = {
                 id: itemId,
@@ -257,6 +282,7 @@ export async function createTierlistTemplate(req: express.Request, res: express.
         categoryId: body.categoryId,
         clientId: client.id,
         public: Boolean(body.publicTemplate),
+        showImageNames: Boolean(body.showImageNames),
         createdAt: Date.now(),
         lastModifiedAt: Date.now()
     }
@@ -572,25 +598,40 @@ export async function addTemplateImages(req: express.Request, res: express.Respo
     if (templateImagesCount + templateImages.length > 200) return res.status(422).json({error: "Too many template images. Max 200 in a tierlist"})
 
     for (const img of templateImages) {
-        const itemId = generateModelId()
+        let itemId = generateModelId()
         try {
             const fileType = img.originalname.split(".").pop()
 
             if (!fileType) return res.status(422).json({error: "Invalid cover image format"})
-            const allowedFileTypes = ["png", "jpg", "jpeg"]
-            if (!allowedFileTypes.includes(fileType.toLowerCase())) return res.status(422).json({error: "Invalid cover image format"})
-
-            let buffer: Buffer = await sharp(img.buffer).toFormat("png").resize(100, 100).png({
-                compressionLevel: 5,
-                force: true
-            }).toBuffer()
+            // const allowedFileTypes = ["png", "jpg", "jpeg", "gif"]
+            // if (!allowedFileTypes.includes(fileType.toLowerCase())) return res.status(422).json({error: "Invalid cover image format"})
 
 
-            await app.bucket.file(`${tierlistId}/items/${itemId}.png`).save(buffer, {contentType: `image/png`})
+            let buffer: Buffer;
+            let contentType: string;
+            let path: string;
+
+            if (fileType.toLowerCase() === "gif") {
+                itemId = "g_" + itemId.slice(2)
+                buffer = img.buffer
+                contentType = `image/gif`
+                path = `${tierlistId}/items/${itemId}.gif`
+            } else {
+                buffer = await sharp(img.buffer).toFormat("png").resize(100, 100).png({
+                    compressionLevel: 5,
+                    force: true
+                }).toBuffer()
+                contentType = `image/png`
+                path = `${tierlistId}/items/${itemId}.png`
+            }
+
+
+            await app.bucket.file(path).save(buffer, {contentType})
 
             let fileName = Buffer.from(img.originalname, 'latin1').toString('utf8');
             const fileExtension = fileName.split(".").pop()
             fileName = fileName.replace(`.${fileExtension}`, "")
+            if (fileName.length > 34) fileName = fileName.slice(0, 34)
 
             const item: TierlistItem = {
                 id: itemId,
@@ -648,8 +689,15 @@ export async function deleteTemplateImages(req: express.Request, res: express.Re
 
     for (const id of templateItemIds) {
         try {
-            const file = app.bucket.file(`${tierlistId}/items/${id}.png`)
-            await file.delete()
+            if (id.startsWith("g_")) {
+                const file = app.bucket.file(`${tierlistId}/items/${id}.gif`)
+                await file.delete()
+            } else {
+                const file = app.bucket.file(`${tierlistId}/items/${id}.png`)
+                await file.delete()
+            }
+
+
             const error = await app.stores.tierlistItems.delete(id, {clientId: client.id})
             if (error) {
                 logger.error("Failed to delete template image: " + error.message)
@@ -720,11 +768,11 @@ export async function updateTemplateCover(req: express.Request, res: express.Res
         const fileType = coverImg.originalname.split(".").pop()
 
         if (!fileType) return res.status(422).json({error: "Invalid cover image format"})
-        const allowedFileTypes = ["png", "jpg", "jpeg"]
-        if (!allowedFileTypes.includes(fileType.toLowerCase())) return res.status(422).json({error: "Invalid cover image format"})
+        // const allowedFileTypes = ["png", "jpg", "jpeg"]
+        // if (!allowedFileTypes.includes(fileType.toLowerCase())) return res.status(422).json({error: "Invalid cover image format"})
 
         let buffer: Buffer = await sharp(coverImg.buffer).toFormat("png").resize(250, 250).png({
-            compressionLevel: 5,
+            compressionLevel: 3,
             force: true
         }).toBuffer()
 

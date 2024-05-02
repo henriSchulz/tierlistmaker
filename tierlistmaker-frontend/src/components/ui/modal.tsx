@@ -12,22 +12,25 @@ interface ModalProps {
     controller: ModalController<ModalControllerOptions>
     title: string
     children: React.ReactNode | string
-
+    hideFooter?: boolean
+    modal?: boolean
 }
 
 
-const Modal = ({controller, title, children}: ModalProps) => {
-    return <Dialog open={controller.states.showState.val} onOpenChange={controller.states.showState.set}>
-        <DialogContent className="sm:max-w-[425px]">
+const Modal = ({controller, title, children, hideFooter, modal}: ModalProps) => {
+    return <Dialog modal={modal} open={controller.states.showState.val} onOpenChange={controller.states.showState.set}>
+        <DialogContent>
             <DialogHeader>
                 <DialogTitle>{title}</DialogTitle>
             </DialogHeader>
-            <DialogContent>
-                {children}
-            </DialogContent>
-            <DialogFooter>
+
+            {children}
+
+            {!hideFooter && <DialogFooter>
                 <Button type="submit">Save changes</Button>
-            </DialogFooter>
+
+
+            </DialogFooter>}
         </DialogContent>
     </Dialog>
 }

@@ -9,17 +9,23 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import {cn} from "@/lib/utils"
 import {Label} from "@/components/ui/label";
 import {useEffect, useState} from "react";
 import CreateTemplatePageController from "@/pages/create-template/CreateTemplatePageController";
-import {Button} from "@/components/ui/button";
-import {Image, Minus, Plus} from "lucide-react";
+import {Button, buttonVariants} from "@/components/ui/button";
+import {Image as LImage, Minus, Plus} from "lucide-react";
 import {Textarea} from "@/components/ui/textarea";
 import {Switch} from "@/components/ui/switch"
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useSearchParams} from "react-router-dom";
 
 import UploadImageItem from "@/pages/create-template/components/UploadImageItem";
 import {useAuthDone} from "@/App";
+import GoogleImageSearchController from "@/features/google-images-search/GoogleImageSearchController";
+import GoogleImageSearchModal from "@/features/google-images-search/GoogleImageSearchModal";
+
+import Google from "@/assets/google.svg";
+import {urlToFile} from "@/utils";
 
 
 export default function () {
@@ -27,13 +33,29 @@ export default function () {
 
     const [numberOfRows, setNumberOfRows] = useState(CreateTemplatePageController.DEFAULT_NUMBER_OF_ROWS)
     const [step, setStep] = useState(0)
-    const [templateName, setTemplateName] = useState("")
-    const [templateCategory, setTemplateCategory] = useState<string | undefined>(undefined)
+    const [templateName, setTemplateName] = useState(
+        localStorage.getItem("templateName") || ""
+    )
+    const [templateCategory, setTemplateCategory] = useState<string | undefined>(
+        localStorage.getItem("templateCategory") || undefined
+    )
     const [templateCoverImage, setTemplateCoverImage] = useState<File | null>(null)
     const [templateImages, setTemplateImages] = useState<File[]>([])
-    const [templateDescription, setTemplateDescription] = useState("")
+    const [templateDescription, setTemplateDescription] = useState(
+        localStorage.getItem("templateDescription") || ""
+    )
     const [isPublicTierlist, setIsPublicTierlist] = useState(true)
+    const [showImageNames, setShowImageNames] = useState(false)
 
+    const [dragTemplateImageActive, setDragTemplateImageActive] = useState(false)
+    const [dragCoverImageActive, setDragCoverImageActive] = useState(false)
+    const [showSearchGoogleImagesModal, setShowSearchGoogleImagesModal] = useState(false)
+    const [showSearchGoogleImagesModal2, setShowSearchGoogleImagesModal2] = useState(false)
+    const [searchInput, setSearchInput] = useState("")
+    const [currentImages, setCurrentImages] = useState<{ src: string, title: string }[]>([])
+    const [selectedImages, setSelectedImages] = useState<{ src: string, title: string }[]>([])
+    const [searchParams, setSearchParams] = useSearchParams()
+    const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
 
 
@@ -46,20 +68,81 @@ export default function () {
             templateCoverImageState: {val: templateCoverImage, set: setTemplateCoverImage},
             templateImagesState: {val: templateImages, set: setTemplateImages},
             templateDescriptionState: {val: templateDescription, set: setTemplateDescription},
-            isPublicTierlistState: {val: isPublicTierlist, set: setIsPublicTierlist}
+            isPublicTierlistState: {val: isPublicTierlist, set: setIsPublicTierlist},
+            dragTemplateImageActiveState: {val: dragTemplateImageActive, set: setDragTemplateImageActive},
+            dragCoverImageActiveState: {val: dragCoverImageActive, set: setDragCoverImageActive},
+            loadingState: {val: loading, set: setLoading},
+            showImageNamesState: {val: showImageNames, set: setShowImageNames}
         },
+        searchParams: {val: searchParams, set: setSearchParams},
         navigate
     })
 
+    const googleImageSearchController = new GoogleImageSearchController({
+        multiple: false,
+        defaultSearch: templateName,
+        setImages: async images => {
+            const file = await urlToFile(images[0].src, images[0].title)
+            setTemplateCoverImage(file)
+            // set the file to the cover-image file input
+
+            const input = document.getElementById("cover-image") as HTMLInputElement
+
+            const files = new DataTransfer()
+            files.items.add(file)
+            input.files = files.files
+        },
+        states: {
+            showState: {val: showSearchGoogleImagesModal, set: setShowSearchGoogleImagesModal},
+            searchInput: {val: searchInput, set: setSearchInput},
+            currentImages: {val: currentImages, set: setCurrentImages},
+            loadingState: {val: loading, set: setLoading},
+            selectedImagesState: {val: selectedImages, set: setSelectedImages}
+        }
+    })
+
+    const googleImageSearchController2 = new GoogleImageSearchController({
+        multiple: true,
+        defaultSearch: templateName,
+        setImages: async images => {
+            const files = await Promise.all(images.map(async image => await urlToFile(image.src, image.title)))
+            setTemplateImages(prev => [...prev, ...files])
+        },
+        states: {
+            showState: {val: showSearchGoogleImagesModal2, set: setShowSearchGoogleImagesModal2},
+            searchInput: {val: searchInput, set: setSearchInput},
+            currentImages: {val: currentImages, set: setCurrentImages},
+            loadingState: {val: loading, set: setLoading},
+            selectedImagesState: {val: selectedImages, set: setSelectedImages}
+        }
+    })
+
     const authDone = useAuthDone()
+
 
     useEffect(() => {
         if (!authDone) return
         controller.init()
     }, [authDone])
 
+    useEffect(() => {
+        localStorage.setItem("templateName", templateName)
+    }, [templateName])
+
+    useEffect(() => {
+        localStorage.setItem("templateDescription", templateDescription)
+    }, [templateDescription])
+
+    useEffect(() => {
+        localStorage.setItem("templateCategory", templateCategory || "")
+    }, [templateCategory])
+
 
     return <Box gridCenter>
+
+
+        {showSearchGoogleImagesModal && <GoogleImageSearchModal controller={googleImageSearchController}/>}
+        {showSearchGoogleImagesModal2 && <GoogleImageSearchModal controller={googleImageSearchController2}/>}
 
         <Card className="mt-10 w-11/12 lg:w-2/3 mb-8">
             <CardHeader>
@@ -120,9 +203,18 @@ export default function () {
                 {step === 1 && <Box>
                     <Box className="mt-4">
                         <Label htmlFor="cover-image">{Texts.COVER_IMAGE}</Label>
-                        <Input accept="image/png, image/jpeg"
-                               onChange={e => setTemplateCoverImage(e.target.files?.[0] || null)} id="cover-image"
-                               type="file"/>
+                        <div className="flex justify-center items-center">
+                            <Input accept="image/png, image/jpeg" placeholder="COVER IMAGES"
+
+                                   onChange={e => setTemplateCoverImage(e.target.files?.[0] || null)} id="cover-image"
+                                   type="file"/>
+
+                            <Button variant="secondary" onClick={googleImageSearchController.open}
+                                    className="ml-2">
+                                <img src={Google} height={30} width={30}/>
+                            </Button>
+                        </div>
+
                     </Box>
 
                     <Box className="mt-4">
@@ -131,17 +223,39 @@ export default function () {
                             <li className="ml-8">{Texts.CHOOSE_ALL_IMAGES_AT_ONCE}</li>
                             <li className="ml-8">{Texts.USE_CONSISTENT_IMAGES}</li>
                             <li className="ml-8">{Texts.MINIMUM_IMAGE_AMOUNT}</li>
-                            <li className="ml-8">{Texts.IMAGE_NAME_INFO}</li>
+                            <li className="ml-8">
+                                {Texts.IMAGE_NAME_INFO}
+                            </li>
                         </ul>
+
+                        <div className="flex items-center space-x-2 mt-2 ml-8">
+                            <Switch checked={showImageNames} onCheckedChange={setShowImageNames}
+                                    id="show-image-names"/>
+                            <Label htmlFor="show-image-names">{Texts.SHOW_IMAGE_NAMES + "?"}</Label>
+                        </div>
 
 
                         <Box>
-                            <Button onClick={() => document.getElementById("template-images")?.click()}
-                                    variant="secondary"
-                                    className="mt-4 w-full">
-                                <Image className="mr-2"/>
-                                {Texts.UPLOAD_IMAGES}
-                            </Button>
+
+                            <div className="flex justify-center items-center mt-3">
+                                <div
+                                    onClick={() => document.getElementById("template-images")?.click()}
+                                    className={cn(buttonVariants({
+                                        variant: "secondary",
+                                        size: "default"
+                                    }), "transition w-full")}>
+                                    <LImage className="mr-2"/>
+                                    {Texts.UPLOAD_IMAGES}
+
+                                </div>
+
+                                <Button variant="secondary" onClick={googleImageSearchController2.open}
+                                        className="ml-2">
+                                    <img src={Google} height={30} width={30}/>
+                                </Button>
+
+                            </div>
+
 
                             <Box className="flex flex-wrap mt-3">
                                 {templateImages.map((image, index) => (
@@ -157,11 +271,13 @@ export default function () {
                         </Box>
 
 
-                        <input style={{display: "none"}} accept="image/png, image/jpeg"
+                        <input style={{display: "none"}} accept=".png, .jpg, .jpeg, .gif"
                                onChange={controller.onFileUploadImageChange}
                                className="mt-4"
                                id="template-images"
                                type="file" multiple/>
+
+
                     </Box>
                     <Button onClick={controller.onContinue2} className="mt-4 w-full">
                         {Texts.CONTINUE}
@@ -186,7 +302,7 @@ export default function () {
                         <Input id={`row-${i}`} placeholder={CreateTemplatePageController.DEFAULT_ROW_NAMES[i]}/>
                     </Box>)}
 
-                    <Button onClick={controller.onSubmit} className="mt-4 w-full">
+                    <Button disabled={loading} onClick={controller.onSubmit} className="mt-4 w-full">
                         {Texts.CREATE_TEMPLATE}
                     </Button>
 

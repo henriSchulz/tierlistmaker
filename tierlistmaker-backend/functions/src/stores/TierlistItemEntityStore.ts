@@ -15,7 +15,7 @@ export default class TierlistItemEntityStore extends EntityStore<TierlistItem> {
 
         const storeSchema: OmittedStoreSchema<TierlistItem> = {
             tierlistId: {type: "string", limit: 200, reference: "tierlists"},
-            name: {type: "string", limit: 30},
+            name: {type: "string", limit: 34},
         }
 
         super("tierlistItems", storeSchema, database, MAX_ITEMS_PER_TIERLIST * MAX_TIER_LISTS);

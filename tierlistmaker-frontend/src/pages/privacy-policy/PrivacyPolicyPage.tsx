@@ -6,7 +6,7 @@ export default function () {
 
         <div className="p-8">
             <h1 className="text-4xl font-bold mb-4">Privacy Policy</h1>
-            <h2 className="text-2xl font-bold mb-2">1. What data is collected?</h2>
+                <h2 className="text-2xl font-bold mb-2">1. What data is collected?</h2>
 
             <h3 className="text-xl font-bold mt-4 mb-2">1.1 Data you provide to us</h3>
             <p>
@@ -67,6 +67,10 @@ export default function () {
                     respond to your inquiries and provide customer service.
                 </li>
                 <li>
+                    <strong>Communicate between users:</strong> We use your data to enable communication between users,
+                    including your username and profile picture, when you decide to share your tier list with others.
+                </li>
+                <li>
                     <strong>Research and analysis:</strong> We use your data for research and analysis purposes to
                     better understand and improve our services. This research may involve aggregated or de-identified
                     data.
@@ -97,28 +101,39 @@ export default function () {
 
             <h2 className="text-2xl font-bold mb-2 mt-8">4. Security</h2>
             <p>
-                We take the protection of your data very seriously and implement appropriate measures to protect your data from unauthorized access, use, disclosure, alteration, or destruction. These measures include:
+                We take the protection of your data very seriously and implement appropriate measures to protect your
+                data from unauthorized access, use, disclosure, alteration, or destruction. These measures include:
             </p>
             <ul className="list-disc ml-6">
-                <li><strong>Technical measures:</strong> We use encryption technologies to protect your data both during transmission and at rest. We also use firewalls and other security technologies to protect our systems from unauthorized access.</li>
-                <li><strong>Organizational measures:</strong> We have internal policies and procedures in place to protect your data.</li>
+                <li><strong>Technical measures:</strong> We use encryption technologies to protect your data both during
+                    transmission and at rest. We also use firewalls and other security technologies to protect our
+                    systems from unauthorized access.
+                </li>
+                <li><strong>Organizational measures:</strong> We have internal policies and procedures in place to
+                    protect your data.
+                </li>
             </ul>
 
             <h3 className="text-xl font-bold mt-8 mb-2">4.2 Encryption</h3>
             <p>
-                We use encryption technologies to protect your data both during transmission and at rest. This means that your data is protected even when transmitted over the internet or stored on our servers.
+                We use encryption technologies to protect your data both during transmission and at rest. This means
+                that your data is protected even when transmitted over the internet or stored on our servers.
             </p>
 
             <h2 className="text-2xl font-bold mt-8 mb-2">5. Storage and Deletion of Data</h2>
 
             <h3 className="text-xl font-bold mt-4 mb-2">5.1 Storage</h3>
             <p>
-                We store your data for as long as necessary for the purposes mentioned in this Privacy Policy or as required by law. For example, we store your data for as long as you have your Tierlistmaker.org account. If you delete your account, we will delete your data.
+                We store your data for as long as necessary for the purposes mentioned in this Privacy Policy or as
+                required by law. For example, we store your data for as long as you have your Tierlistmaker.org account.
+                If you delete your account, we will delete your data.
             </p>
 
             <h3 className="text-xl font-bold mt-4 mb-2">5.2 Deletion</h3>
             <p>
-                You can delete your Tierlistmaker.org account and have your data deleted at any time. To delete your account, please send an email to <a href="mailto:contact@tierlistmaker.org" className="text-blue-500 hover:underline">contact@tierlistmaker.org</a>.
+                You can delete your Tierlistmaker.org account and have your data deleted at any time. To delete your
+                account, please send an email to <a href="mailto:contact@tierlistmaker.org"
+                                                    className="text-blue-500 hover:underline">contact@tierlistmaker.org</a>.
             </p>
 
             <h2 className="text-2xl font-bold mt-8 mb-2">6. Your Rights</h2>
@@ -126,25 +141,42 @@ export default function () {
                 You have the following rights regarding your data:
             </p>
             <ul className="list-disc ml-6">
-                <li><strong>Access to your data:</strong> You have the right to access the data we have collected about you.</li>
-                <li><strong>Rectification of your data:</strong> You have the right to correct your data if it is inaccurate or incomplete.</li>
-                <li><strong>Deletion of your data:</strong> You have the right to have your data deleted if the conditions for deletion are met under applicable data protection laws.</li>
-                <li><strong>Restriction of processing your data:</strong> You have the right to restrict the processing of your data if the conditions for restriction are met under applicable data protection laws.</li>
-                <li><strong>Objection to processing your data:</strong> You have the right to object to the processing of your data if the conditions for objection are met under applicable data protection laws.</li>
-                <li><strong>Data portability:</strong> You have the right to receive your data in a structured, commonly used, and machine-readable format and to transmit this data to another controller.</li>
+                <li><strong>Access to your data:</strong> You have the right to access the data we have collected about
+                    you.
+                </li>
+                <li><strong>Rectification of your data:</strong> You have the right to correct your data if it is
+                    inaccurate or incomplete.
+                </li>
+                <li><strong>Deletion of your data:</strong> You have the right to have your data deleted if the
+                    conditions for deletion are met under applicable data protection laws.
+                </li>
+                <li><strong>Restriction of processing your data:</strong> You have the right to restrict the processing
+                    of your data if the conditions for restriction are met under applicable data protection laws.
+                </li>
+                <li><strong>Objection to processing your data:</strong> You have the right to object to the processing
+                    of your data if the conditions for objection are met under applicable data protection laws.
+                </li>
+                <li><strong>Data portability:</strong> You have the right to receive your data in a structured, commonly
+                    used, and machine-readable format and to transmit this data to another controller.
+                </li>
             </ul>
             <p>
-                To exercise your rights, please send an email to <a href="mailto:contact@tierlistmaker.org" className="text-blue-500 hover:underline">contact@tierlistmaker.org</a>.
+                To exercise your rights, please send an email to <a href="mailto:contact@tierlistmaker.org"
+                                                                    className="text-blue-500 hover:underline">contact@tierlistmaker.org</a>.
             </p>
 
             <h2 className="text-2xl font-bold mt-8 mb-2">7. Contact</h2>
             <p>
-                If you have any questions about this Privacy Policy or wish to exercise your rights regarding your data, please contact us at: <a href="mailto:contact@tierlistmaker.org" className="text-blue-500 hover:underline">contact@tierlistmaker.org</a>.
+                If you have any questions about this Privacy Policy or wish to exercise your rights regarding your data,
+                please contact us at: <a href="mailto:contact@tierlistmaker.org"
+                                         className="text-blue-500 hover:underline">contact@tierlistmaker.org</a>.
             </p>
 
             <h2 className="text-2xl font-bold mt-8 mb-2">8. Changes to the Privacy Policy</h2>
             <p>
-                We may change this Privacy Policy from time to time. If we make changes, we will notify you by posting the updated Privacy Policy on our website. The updated Privacy Policy will take effect immediately upon posting.
+                We may change this Privacy Policy from time to time. If we make changes, we will notify you by posting
+                the updated Privacy Policy on our website. The updated Privacy Policy will take effect immediately upon
+                posting.
             </p>
 
         </div>

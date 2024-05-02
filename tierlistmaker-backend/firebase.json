@@ -15,6 +15,10 @@
     "public": "functions/lib/public",
     "rewrites": [
       {
+        "source": "/shared/**",
+        "function": "shared"
+      },
+      {
         "source": "/create/**",
         "function": "create"
       },

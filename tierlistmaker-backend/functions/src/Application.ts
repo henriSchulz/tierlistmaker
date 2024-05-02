@@ -26,7 +26,7 @@ import {
     updateTemplateCover, updateTemplateRows, getClientTemplates, deleteTemplate
 } from "./routes/routes";
 import VoteEntityStore from "./stores/VoteEntitxStore";
-import {auth as authfn, authOptional} from "./routes/auth";
+import {auth as authfn, authOptional, getUserProfile} from "./routes/auth";
 import sitemap from "./routes/sitemap";
 import {auth, firestore} from "firebase-admin";
 import Auth = auth.Auth;
@@ -34,6 +34,7 @@ import Firestore = firestore.Firestore;
 import {getAuth} from "firebase-admin/auth";
 import {getStorage} from "firebase-admin/storage";
 import {getFirestore} from "firebase-admin/firestore";
+import {getGoogleImages} from "./routes/googleImages";
 
 
 type Stores = {
@@ -128,11 +129,15 @@ export default class Application {
 
         router.get("/site-map.xml", sitemap)
 
+        router.get("/profile/:id", getUserProfile)
+
+        router.get("/image-search", getGoogleImages)
+
         this.app.use("/api", router)
     }
 
     initServer() {
-        logger.info("Starting Tierlistmaker Server...")
+        logger.info("Starting Tierlistmaker API...")
         this.initializeStores()
         this.initializeMiddleware()
         this.initializeRoutes()
@@ -140,3 +145,20 @@ export default class Application {
 
     }
 }
+
+/*
+
+
+Serialization of a tierlist create by a user:
+
+
+/share/:tierlistId?data=rowId:itemId;itemId2;itemId3|rowId2:itemId4;itemId5;itemId6|rowId3:itemId7;itemId8;itemId9?
+
+Example:
+
+
+
+
+
+
+ */

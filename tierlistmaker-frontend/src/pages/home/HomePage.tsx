@@ -13,6 +13,7 @@ import AuthenticationService from "@/services/AuthenticationService";
 import Paths from "@/Paths";
 import {useNavigate} from "react-router-dom";
 
+
 export default function () {
 
     const [initDone, setInitDone] = useState<boolean>(false)
@@ -44,7 +45,7 @@ export default function () {
                     className="title mt-10 b-4 text-6xl font-extrabold leading-none tracking-tight text-gray-900 dark:text-white"></h1>
 
 
-                <p className="text-gray-600 text-lg leading-7 mt-6">
+                <p className="text-muted-foreground text-lg leading-7 mt-6">
                     {Texts.TIER_LIST_DEFINITION}
                 </p>
 
@@ -90,7 +91,8 @@ export default function () {
                             </h3>}
 
                         </Box>
-                        <ScrollBar orientation="horizontal"/>
+                        <ScrollBar orientation={"horizontal"}/>
+                        <ScrollBar orientation={"horizontal"}/>
                     </ScrollArea>
                 </Box>
             </Box>

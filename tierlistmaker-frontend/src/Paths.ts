@@ -11,6 +11,8 @@ enum Paths {
     PROFILE = "/profile",
     PRIVACY_POLICY = "/privacy-policy",
     TERMS_OF_SERVICE = "/terms-of-service",
+    SHARED = "/shared/:id",
+    IMPRINT = "/imprint",
 }
 
 

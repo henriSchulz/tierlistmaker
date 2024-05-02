@@ -112,3 +112,25 @@ export const authOptional = getAuth(true)
 
 export const auth = getAuth(false)
 
+export async function getUserProfile(req: Request, res: Response) {
+    const id = req.params.id
+
+    if (!id) {
+        return res.sendStatus(422).json({error: "No id provided"})
+    }
+
+    try {
+        const user = await app.auth.getUser(id)
+
+        if (!user) {
+            return res.sendStatus(404).json({error: "User not found"})
+        }
+
+        return res.json({name: user.displayName?.split(" ")[0] ?? "Unknown"})
+    } catch (e) {
+        return res.sendStatus(404).json({error: "User not found"})
+    }
+
+
+}
+

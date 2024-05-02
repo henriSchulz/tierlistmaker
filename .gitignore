@@ -10,9 +10,15 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+tierlistmaker-backend/functions/lib
+tierlistmaker-backend/functions/node_modules
+tierlistmaker-backend/functions/src/public
+tierlistmaker-backend/functions/src/keys
+tierlistmaker-backend/functions/src/dynamic-meta-public
+
 *.local
 package-lock.json
-lib
+
 
 # Editor directories and files
 .vscode/*

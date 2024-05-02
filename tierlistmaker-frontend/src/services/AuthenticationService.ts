@@ -40,10 +40,10 @@ export default class AuthenticationService {
         }
     }
 
-    public static async signInWithGoogle(): Promise<void> {
+    public static async signInWithGoogle(redirectUrl?: string | null): Promise<void> {
         await signInWithPopup(auth, provider)
         await wait(100)
-        window.location.href = Paths.HOME
+        window.location.href = redirectUrl ?? Paths.HOME
     }
 
     public static async signInWithEmailPassword(email: string, password: string): Promise<void> {

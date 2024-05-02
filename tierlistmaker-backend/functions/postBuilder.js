@@ -21,6 +21,13 @@ for (const folder of FOLDERS_TO_COPY) {
     console.log(`Copied ${folder} to ${toPath}`)
 }
 
+
+//move the file .puppeteerrc.cjs to the lib folder
+
+const puppeteerConfig = path.join(".puppeteerrc.cjs")
+fs.cpSync(puppeteerConfig, path.join(toPath, puppeteerConfig), {recursive: true, force: true})
+console.log(`Copied ${puppeteerConfig} to ${toPath}`)
+
 const index = path.join(toPath, "public", "index.html")
 
 const dynamicMetaPublicIndex = path.join(toPath, "dynamic-meta-public", "index.html")
@@ -31,6 +38,7 @@ const TITLE_PLACEHOLDER = "__TITLE__";
 const DESCRIPTION_PLACEHOLDER = "__DESCRIPTION__";
 const IMAGE_PLACEHOLDER = "__IMAGE__";
 const URL_PLACEHOLDER = "__URL__";
+const KEYWORDS_PLACEHOLDER = "__KEYWORDS__";
 
 console.log("Replacing placeholders in dynamic-meta-public/index.html")
 dynamicMetaPublicIndexContent = dynamicMetaPublicIndexContent.replace(/<title>.*?<\/title>/i, `<title>${TITLE_PLACEHOLDER}</title>`);
@@ -44,6 +52,8 @@ dynamicMetaPublicIndexContent = dynamicMetaPublicIndexContent.replace(/<meta\s+p
     `<meta property="og:title" content="${TITLE_PLACEHOLDER}">`);
 dynamicMetaPublicIndexContent = dynamicMetaPublicIndexContent.replace(/<meta\s+property="og:description"\s+content="([^"]*)">/,
     `<meta property="og:description" content="${DESCRIPTION_PLACEHOLDER}">`);
+dynamicMetaPublicIndexContent = dynamicMetaPublicIndexContent.replace(/<meta\s+name="keywords"\s+content="([^"]*)">/,
+    `<meta name="keywords" content="${KEYWORDS_PLACEHOLDER}">`);
 
 fs.writeFileSync(dynamicMetaPublicIndex, dynamicMetaPublicIndexContent, "utf8")
 

@@ -18,6 +18,7 @@ import React from "react";
 interface EditTemplateControllerOptions {
     states: {
         tierlistState: State<Tierlist | null>
+        loadingState: State<boolean>
         tierlistNameState: State<string>
         tierlistDescriptionState: State<string>
         publicTemplateState: State<boolean>
@@ -46,7 +47,6 @@ export default class EditTemplateController {
     }
 
     init = async (id?: string) => {
-
 
 
         if (!id) {
@@ -119,8 +119,15 @@ export default class EditTemplateController {
 
         toast.promise(promise, {
             loading: Texts.UPDATING_TIERLIST_INFORMATION + "...",
-            error: Texts.FAILED_TO_UPDATE_TIERLIST_INFORMATION,
-            success: Texts.TIERLIST_INFORMATION_UPDATED
+            error: () => {
+                this.states.loadingState.set(false)
+                return Texts.FAILED_TO_UPDATE_TIERLIST_INFORMATION
+            },
+            success: () => {
+                this.states.loadingState.set(false)
+                return Texts.TIERLIST_INFORMATION_UPDATED
+
+            }
         })
     }
 
@@ -152,7 +159,7 @@ export default class EditTemplateController {
             }
         }
 
-        if(imagesToAdd.length > 50) {
+        if (imagesToAdd.length > 50) {
             return toast.error(Texts.TOO_MANY_TEMPLATE_IMAGES, {
                 action: {
                     label: Texts.OK,
@@ -245,6 +252,7 @@ export default class EditTemplateController {
         }
 
         if (imagesToAdd.length > 0) {
+            this.states.loadingState.set(true)
             await new Promise<void>(resolve => {
                 toast.promise(ApiService.addTemplateImages(tierlist.id, imagesToAdd), {
                     loading: Texts.ADDING_TEMPLATE_IMAGES + "...",
@@ -319,6 +327,7 @@ export default class EditTemplateController {
         }
 
 
+        this.states.loadingState.set(true)
         const promise = ApiService.updateTemplateRows(this.states.tierlistState.val.id, rowsToAdd, rowsToRemove, rowsToUpdate)
 
         await new Promise<void>(resolve => {

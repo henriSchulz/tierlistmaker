@@ -19,8 +19,13 @@ interface CreateTemplatePageControllerOptions {
         templateCoverImageState: State<File | null>
         templateImagesState: State<File[]>
         isPublicTierlistState: State<boolean>
+        dragTemplateImageActiveState: State<boolean>
+        dragCoverImageActiveState: State<boolean>
+        loadingState: State<boolean>
+        showImageNamesState: State<boolean>
     },
     navigate: NavigateFunction
+    searchParams: { val: URLSearchParams, set: (val: URLSearchParams) => void }
 }
 
 
@@ -37,6 +42,7 @@ export default class CreateTemplatePageController {
     private states: CreateTemplatePageControllerOptions["states"]
     private navigate: NavigateFunction
 
+
     constructor(options: CreateTemplatePageControllerOptions) {
         this.states = options.states
         this.navigate = options.navigate
@@ -47,7 +53,7 @@ export default class CreateTemplatePageController {
         if (!AppController.INITIAL_INIT_DONE) return
 
         if (!AuthenticationService.current) {
-            this.navigate(Paths.SIGN_IN)
+            this.navigate(Paths.SIGN_IN + "?redirect=" + Paths.CREATE_TEMPLATE)
         }
     }
 
@@ -197,18 +203,18 @@ export default class CreateTemplatePageController {
 
         const fiftyMB = 50 * 1024 * 1024
 
-        for (const file of this.states.templateImagesState.val) {
-            if (file.name.length > 34) {
-                return toast.error(Texts.TEMPLATE_IMAGE_NAME_TOO_LONG.replace("{name}", file.name), {
-                    action: {
-                        label: Texts.OK,
-                        onClick: () => {
-                            toast.dismiss()
-                        }
-                    }
-                })
-            }
-        }
+        // for (const file of this.states.templateImagesState.val) {
+        //     if (file.name.length > 34) {
+        //         return toast.error(Texts.TEMPLATE_IMAGE_NAME_TOO_LONG.replace("{name}", file.name), {
+        //             action: {
+        //                 label: Texts.OK,
+        //                 onClick: () => {
+        //                     toast.dismiss()
+        //                 }
+        //             }
+        //         })
+        //     }
+        // }
 
         if (templateImagesSizeSum > fiftyMB) {
             return toast.error(Texts.TEMPLATE_IMAGES_TOO_LARGE, {
@@ -295,6 +301,7 @@ export default class CreateTemplatePageController {
 
 
         console.log(rowNames)
+        this.states.loadingState.set(true)
         const promise = ApiService.createTierlistTemplate(
             this.states.templateNameState.val,
             this.states.templateDescriptionState.val,
@@ -302,14 +309,17 @@ export default class CreateTemplatePageController {
             this.states.templateCoverImageState.val!,
             this.states.templateImagesState.val,
             rowNames,
-            this.states.isPublicTierlistState.val
+            this.states.isPublicTierlistState.val,
+            this.states.showImageNamesState.val
         )
 
         toast.promise(promise, {
             loading: Texts.CREATING_TEMPLATE,
             success: id => {
-
                 setTimeout(() => {
+                    localStorage.removeItem("templateName")
+                    localStorage.removeItem("templateDescription")
+                    localStorage.removeItem("templateCategory")
                     const templateName = this.states.templateNameState.val.split(" ").join("-").toLowerCase()
 
 
@@ -319,12 +329,14 @@ export default class CreateTemplatePageController {
 
                 return Texts.TEMPLATE_CREATED
             },
-            error: Texts.FAILED_TO_CREATE_TEMPLATE
+            error: () => {
+                this.states.loadingState.set(false)
+                return Texts.FAILED_TO_CREATE_TEMPLATE
+            }
         })
 
 
     }
-
 
 }
 

@@ -4,15 +4,18 @@ import TierlistRow from "@/types/dbmodel/TierlistRow";
 import TierlistItem from "@/types/dbmodel/TierlistItem";
 import ApiService from "@/services/ApiService";
 import Paths from "@/Paths";
-import Settings from "@/Settings";
-import html2canvas from "html2canvas";
+
+import * as htmlToImage from 'html-to-image';
 import {toast} from "sonner";
 import Texts from "@/text/Texts";
 import AuthenticationService from "@/services/AuthenticationService";
 import {NavigateFunction} from "react-router-dom";
+import {collection, doc, getDoc, getDocs, where, query, getCountFromServer} from "@firebase/firestore";
+import {firestore} from "@/config/firebaseConfig";
+import {wait} from "@/utils";
 
 
-interface CreateTierlistControllerOptions {
+export interface CreateTierlistControllerOptions {
     states: {
         initDoneState: State<boolean>
         tierlistState: State<Tierlist | null>
@@ -22,6 +25,7 @@ interface CreateTierlistControllerOptions {
         isTierlistVotedState: State<boolean>
         isLoadingState: State<boolean>
         tierlistVotesState: State<number>
+        isExportingState: State<boolean>
     },
     navigate: NavigateFunction
 }
@@ -54,20 +58,72 @@ export default class CreateTierlistController {
             return this.navigate(Paths.NOT_FOUND)
         }
 
-        const {success: success_, data} = await ApiService.loadTierlist(tierlistId)
 
-        if (!success_ || !data) {
-            console.log("Navigating back bc success_ is false or data is null")
+
+        let tierlist: Tierlist
+        let tierlistRows: TierlistRow[]
+        let tierlistItems: TierlistItem[]
+        let votes: number
+
+        try {
+            const tierlistDoc = await getDoc(doc(firestore, "tierlists", tierlistId))
+            tierlist = tierlistDoc.data() as Tierlist
+            if (!tierlist) return this.navigate(Paths.NOT_FOUND)
+            if (!tierlist.public) return this.navigate(Paths.NOT_FOUND)
+
+        } catch (e) {
+            console.log("ERROR: ", e)
             return this.navigate(Paths.NOT_FOUND)
         }
 
-        const {success, voted} = await ApiService.loadIsTierlistVoted(tierlistId)
 
-        if (success) {
-            this.states.isTierlistVotedState.set(voted)
+
+        try {
+            const q = query(collection(firestore, "tierlistRows"), where("tierlistId", "==", tierlistId))
+            const snapshot = await getDocs(q)
+            tierlistRows = snapshot.docs.map(doc => doc.data() as TierlistRow)
+
+
+        } catch (e) {
+            return this.navigate(Paths.NOT_FOUND)
         }
 
-        const {tierlist, tierlistRows, tierlistItems, votes} = data
+
+
+        try {
+            const q = query(collection(firestore, "tierlistItems"), where("tierlistId", "==", tierlistId))
+            const snapshot = await getDocs(q)
+            tierlistItems = snapshot.docs.map(doc => doc.data() as TierlistItem)
+        } catch (e) {
+            return this.navigate(Paths.NOT_FOUND)
+        }
+
+
+
+        try {
+            const q = query(collection(firestore, "votes"), where("tierlistId", "==", tierlistId))
+            const snapshot = await getCountFromServer(q)
+            votes = snapshot.data().count
+        } catch (e) {
+            return this.navigate(Paths.NOT_FOUND)
+        }
+
+
+
+        try {
+            const client = AuthenticationService.current
+            if (client) {
+                const q = query(collection(firestore, "votes"), where("tierlistId", "==", tierlistId), where("clientId", "==", client.id))
+                const snapshot = await getCountFromServer(q)
+                const count = snapshot.data().count
+                this.states.isTierlistVotedState.set(count > 0)
+            }
+        } catch (e) {
+            return this.navigate(Paths.NOT_FOUND)
+        }
+
+
+
 
         this.states.tierlistState.set(tierlist)
         this.states.tierlistRowsState.set(tierlistRows)
@@ -85,34 +141,20 @@ export default class CreateTierlistController {
         }
 
 
+
+
         this.states.initDoneState.set(true)
     }
 
-    getTierlistItemImageUrl(tierlistId: string, itemId: string) {
-        return `${Settings.API_URL}/template-item-image/${tierlistId}/${itemId}`
-    }
 
-    async export() {
+    async getExportImage(): Promise<string | never> {
         const el = document.getElementById("tierlist")
-        if (!el) return
-
-        const backgroundBefore = el.style.backgroundColor
-        const paddingBefore = el.style.padding
-        el.style.backgroundColor = "white"
-        el.style.padding = "20px"
-
-        const canvas = await html2canvas(el, {useCORS: true})
-
-        const img = canvas.toDataURL("image/png")
-
-        const a = document.createElement("a")
-        a.href = img
-        a.download = "tierlist.png"
-        a.click()
-
-        el.style.backgroundColor = backgroundBefore
-        el.style.padding = paddingBefore
-
+        if (!el) throw new Error("Tierlist not found in CreateTierlistController::getExportImage()")
+        this.states.isExportingState.set(true)
+        await wait(500)
+        const dataUrl = await htmlToImage.toPng(el)
+        this.states.isExportingState.set(false)
+        return dataUrl
     }
 
 
@@ -207,7 +249,7 @@ export default class CreateTierlistController {
             return toast.error(Texts.NEED_TO_BE_SIGNED_IN_TO_VOTE, {
                 action: {
                     label: Texts.SIGN_IN,
-                    onClick: () => this.navigate(Paths.SIGN_IN)
+                    onClick: () => this.navigate(Paths.SIGN_IN + "?redirect=" + window.location.pathname)
                 }
             })
 
@@ -219,6 +261,57 @@ export default class CreateTierlistController {
             this.voteTierlist(tierlist)
         }
 
+    }
+
+    onShareTwitter = () => {
+        const BASE_URL = "https://twitter.com/intent/post?text="
+        const text = encodeURIComponent(
+            Texts.SHARE_TIERLIST_TEXT
+                .replace("{name}", this.states.tierlistState.val!.name)
+                .replace("{url}", window.location.href)
+        )
+
+        window.open(`${BASE_URL}${text}`)
+    }
+
+    onShareReddit = () => {
+        const BASE_URL = "https://www.reddit.com/submit?title="
+        const text = encodeURIComponent(
+            Texts.SHARE_TIERLIST_TEXT
+                .replace("{name}", this.states.tierlistState.val!.name)
+                .replace("{url}", window.location.href)
+        )
+
+        window.open(`${BASE_URL}${text}`)
+    }
+
+    getEncodedShareTierlistData = () => {
+        const data = this.states.tierlistDataState.val!
+
+
+        if (!data) return
+
+        const dataMap: Record<string, string[]> = {}
+
+        data.forEach(item => {
+            if (!dataMap[item.rowId]) {
+                dataMap[item.rowId] = []
+            }
+            dataMap[item.rowId].push(item.id)
+        })
+
+        const dataString = Object.keys(dataMap).map(rowId => `${rowId}${dataMap[rowId].map(id => id.slice(0, 4)).join("")};`).join(";")
+
+        return btoa(dataString)
+
+    }
+
+    getShareRankingUrl = () => {
+        const data = this.getEncodedShareTierlistData()
+        if (!data) return ""
+        const id = AuthenticationService.current!.id
+
+        return `${window.location.href.replace("create", "shared")}?data=${data}&createdBy=${encodeURIComponent(id)}`
     }
 
 

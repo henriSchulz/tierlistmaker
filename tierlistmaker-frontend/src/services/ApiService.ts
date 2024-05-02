@@ -6,6 +6,8 @@ import TierlistRow from "@/types/dbmodel/TierlistRow";
 import LiteTierlist from "@/types/LiteTierlist";
 import AuthenticationService from "@/services/AuthenticationService";
 import RequestBuilder from "@/lib/RequestBuilder";
+import {collection, getDocs, query, where} from "@firebase/firestore";
+import {firestore} from "@/config/firebaseConfig";
 
 
 enum APIPaths {
@@ -22,14 +24,15 @@ enum APIPaths {
     UPDATE_TEMPLATE_COVER = "/update-template-cover",
     UPDATE_TEMPLATE_ROWS = "/update-template-rows",
     CLIENT_TEMPLATES = "/client-templates",
-    DELETE_TEMPLATE = "/delete-template/:id"
+    DELETE_TEMPLATE = "/delete-template/:id",
+    EXPORT_IMAGE = "/export-image"
 }
 
 
 export default class ApiService {
 
 
-    public static async createTierlistTemplate(name: string, description: string, categoryId: string, coverImg: File, templateImgs: File[], rowNames: string[], publicTemplate: boolean): Promise<string> {
+    public static async createTierlistTemplate(name: string, description: string, categoryId: string, coverImg: File, templateImgs: File[], rowNames: string[], publicTemplate: boolean, showImageNames: boolean): Promise<string> {
         const request = RequestBuilder.buildRequest({
             url: `${Settings.API_URL}${APIPaths.CREATE_TEMPLATE}`,
             method: "POST",
@@ -42,6 +45,7 @@ export default class ApiService {
                 description,
                 categoryId,
                 publicTemplate,
+                showImageNames,
                 coverImg,
                 templateImgs,
                 rowNames: JSON.stringify(rowNames),
@@ -168,22 +172,19 @@ export default class ApiService {
 
     public static async loadSearchTierlists(): Promise<{ success: boolean, tierlists: LiteTierlist[] }> {
         try {
-
-            const request = RequestBuilder.buildRequest({
-                url: `${Settings.API_URL}${APIPaths.SEARCH_TIERLISTS}`,
-                method: "GET",
-                token: AuthenticationService.current?.token,
+            const coll = collection(firestore, "tierlists")
+            const q = query(coll, where("public", "==", true))
+            const snapshot = await getDocs(q)
+            const tierlists = snapshot.docs.map(doc => {
+                const data = doc.data() as Tierlist
+                return {
+                    name: data.name,
+                    id: data.id,
+                }
             })
 
-            const res = await request.send<{ tierlists: LiteTierlist[] }>()
+            return {success: true, tierlists}
 
-            if (res.error || !res.data) {
-                console.error(res.error ?? "Error loading tierlists")
-                return {success: false, tierlists: []}
-            }
-
-
-            return {success: true, tierlists: res.data.tierlists}
         } catch (e) {
             console.error(e)
             return {success: false, tierlists: []}
@@ -368,6 +369,38 @@ export default class ApiService {
         if (res.error || res.status !== 200) {
             throw new Error("Error deleting tierlist")
         }
+    }
+
+    public static async getClientProfile(clientId: string): Promise<{ profile: { name: string }, success: boolean }> {
+        const request = RequestBuilder.buildRequest({
+            url: `${Settings.API_URL}/profile/${clientId}`,
+            method: "GET",
+            token: AuthenticationService.current?.token,
+        })
+
+        const res = await request.send<{ name: string }>()
+
+        if (res.error || res.status !== 200 || !res.data) {
+            return {success: false, profile: {name: ""}}
+        }
+
+        return {success: true, profile: {name: res.data.name}}
+    }
+
+    public static async searchGoogleImages(query: string): Promise<{ src: string, title: string }[] | never> {
+        const request = RequestBuilder.buildRequest({
+            url: `${Settings.API_URL}/image-search?q=${query}`,
+            method: "GET",
+            token: AuthenticationService.current?.token,
+        })
+
+        const res = await request.send<{ src: string, title: string }[]>()
+
+        if (res.error || res.status !== 200 || !res.data) {
+            throw new Error("No images found")
+        }
+
+        return res.data
     }
 
 

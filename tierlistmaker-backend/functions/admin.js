@@ -47,8 +47,22 @@ async function main() {
         }
 
         return console.log(`Added ${numberOfVotes} votes to ${tierlistId}`)
+    }
+
+    if (command === "rmvotes") {
+        const [tierlistId] = args
+        if (!tierlistId) {
+            return console.log("Missing arguments")
+        }
+
+        const votes = await db.collection("votes").where("tierlistId", "==", tierlistId).where("clientId", "==", "fake-vote-client").get()
+
+        for (const vote of votes.docs) {
+            await db.collection("votes").doc(vote.id).delete()
+        }
 
 
+        return console.log(`Deleted all votes for ${tierlistId}`)
     }
 
 

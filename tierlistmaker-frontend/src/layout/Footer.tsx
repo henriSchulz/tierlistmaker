@@ -5,16 +5,20 @@ import Paths from "@/Paths";
 export default function Footer() {
     const navigate = useNavigate()
     return (
-        <div className="lg:mx-20 mx-5 mt-20"
+        <div className="lg:mx-20 mx-5 mt-20 "
         ><Separator/>
-            <div className="py-8">
+            <div className="py-4">
 
-                <div className="mx-auto flex justify-between items-center">
+                <div className="mx-auto grid space-y-2 md:flex md:justify-between items-center">
                     <div className="text-gray-400">
-                        <a onClick={() => navigate(Paths.TERMS_OF_SERVICE)} className="mr-4 hover:text-gray-300 cursor-pointer">Terms
+                        <a onClick={() => navigate(Paths.TERMS_OF_SERVICE)}
+                           className="mr-4 hover:text-gray-300 cursor-pointer">Terms
                             of Service</a>
                         <a onClick={() => navigate(Paths.PRIVACY_POLICY)}
                            className="mr-4 hover:text-gray-300 cursor-pointer">Privacy Policy</a>
+
+                        <a onClick={() => navigate(Paths.IMPRINT)}
+                           className="hover:text-gray-300 cursor-pointer">Imprint</a>
                     </div>
 
                     <div className="text-gray-400 text-sm">

@@ -118,6 +118,7 @@ interface TextKeys {
     GO_BACK: string
     MY_TIER_LIST_TEMPLATES: string
     EDIT: string
+
     DELETE: string
     PROFILE_DESCRIPTION: string
     NO_TEMPLATES_CREATED_YET: string
@@ -129,6 +130,31 @@ interface TextKeys {
     SHOW_IMAGE_NAMES: string
     UPLOAD_IMAGES: string
     IMAGE_NAME_INFO: string
+    COOKIE_CONSENT_FORCE: string
+    WE_USE_COOKIES: string
+    WE_USE_COOKIE_DESCRIPTION: string
+    BY_CLICKING_ACCEPT: string
+    ACCEPT: string
+    DECLINE: string
+    SHARE_TEMPLATE: string
+    SHARE_DIRECTLY: string
+    SHARE_TIERLIST_TEXT: string
+    DROP_IMAGE: string
+    USER_RANKING_TITLE: string
+    SHARE_YOUR_RANKING: string
+    LINK_COPIED: string
+    CLOSE: string
+    RANK_YOURSELF: string
+    GOOGLE_IMAGE_SEARCH: string
+    LOADING_IMAGES_FOR: string
+    NO_IMAGES_FOUND: string
+    SUCCESSFULLY_LOADED_IMAGES: string
+    ADD_IMAGES: string
+    ADDING_IMAGES: string
+    ADDED_IMAGES: string
+    FAILED_TO_ADD_IMAGES: string
+    GOOGLE_IMAGES: string
+
 
     SELECTION_CATEGORIES: {
         VIDEO_GAMES: string
