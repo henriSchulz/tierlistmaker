@@ -1,10 +1,18 @@
 import {Card} from "@/components/ui/card";
+import {Helmet} from "react-helmet";
 
 
 export default function () {
 
 
     return <Card className="lg:mx-20 mx-5 mt-8 mb-8">
+
+        <Helmet>
+            <title>
+                Imprint - Tierlistmaker
+            </title>
+        </Helmet>
+
         <div className="p-8">
             <h1 className="text-4xl font-bold mb-4">Imprint</h1>
 

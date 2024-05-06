@@ -4,7 +4,7 @@ import {
     AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
-    AlertDialogDescription,
+
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
@@ -29,10 +29,8 @@ const Modal = (props: MessageModalProps) => {
         <AlertDialogContent>
             <AlertDialogHeader>
                 <AlertDialogTitle>{props.title}</AlertDialogTitle>
-                <AlertDialogDescription>
-                    {props.message}
-                </AlertDialogDescription>
             </AlertDialogHeader>
+            <div className="text-lg" dangerouslySetInnerHTML={{__html: props.message}}/>
             <AlertDialogFooter>
                 <AlertDialogCancel
                     onClick={props.controller.close}>{props.cancelButtonText || Texts.CANCEL}</AlertDialogCancel>

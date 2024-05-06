@@ -15,7 +15,6 @@ import {
     BreadcrumbItem,
     BreadcrumbLink,
     BreadcrumbList,
-    BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import Paths from "@/Paths";
@@ -43,8 +42,13 @@ import ShareTierlistController from "@/pages/create-tierlist/features/share-tier
 import ShareTierlistModal from "@/pages/create-tierlist/features/share-tierlist/ShareTierlistModal";
 import {Helmet} from "react-helmet";
 
+import {setClipboard} from "@/utils";
+import {toast} from "sonner";
+import MessageModalController from "@/controller/MessageModalController";
+import {Modal} from "@/components/ui/message-modal";
 
-const COLORS = ["#de3030", "#e07a34", "#e2c337", "#9dbd3d", "#40d6cf", "#3d9dbd", "#ab567e", "#db2b7d"]
+
+const COLORS = ["#de3030", "#e07a34", "#e2c337", "#ffa05c", "#ffa05c", "#ff6e61", "#ff4284", "#d742a8"]
 
 
 export default function CreateTierlistPage() {
@@ -66,14 +70,30 @@ export default function CreateTierlistPage() {
     const [exportImageModalLoading, setExportImageModalLoading] = useState<boolean>(false)
     const [exportImageUrl, setExportImageUrl] = useState<string>("")
     const [showImageNames, setShowImageNames] = useState<boolean>(
-        tierlist?.showImageNames ? (localStorage.getItem("showImageNames") !== "false") || true : false
+        false
     )
+    const [showImagesNamesModal, setShowImagesNamesModal] = useState<boolean>(false)
     const [isExporting, setIsExporting] = useState<boolean>(false)
 
     const authDone = useAuthDone()
 
     const [tierlistData, setTierlistData] = useState<(TierlistItem & { rowId: string })[] | null>(null)
     const navigate = useNavigate()
+
+    const showImageNamesController = new MessageModalController({
+        states: {
+            showState: {val: showImagesNamesModal, set: setShowImagesNamesModal}
+        },
+        onSubmit: () => {
+            setShowImageNames(true)
+            localStorage.setItem("showImageNames", "true")
+        },
+        onCancel: () => {
+            setShowImageNames(false)
+            localStorage.setItem("showImageNames", "false")
+        }
+    })
+
     const controller = new CreateTierlistController({
         states: {
             initDoneState: {val: initDone, set: setInitDone},
@@ -84,7 +104,9 @@ export default function CreateTierlistPage() {
             tierlistDataState: {val: tierlistData, set: setTierlistData},
             isTierlistVotedState: {val: isTierlistVoted, set: setIsTierlistVoted},
             isLoadingState: {val: isLoading, set: setIsLoading},
-            isExportingState: {val: isExporting, set: setIsExporting}
+            isExportingState: {val: isExporting, set: setIsExporting},
+            showImagesNamesState: {val: showImageNames, set: setShowImageNames},
+            showImageNamesModalState: {val: showImagesNamesModal, set: setShowImagesNamesModal}
         },
         navigate
     })
@@ -96,14 +118,25 @@ export default function CreateTierlistPage() {
     }, [id, authDone])
 
     useEffect(() => {
+        if (!initDone) return
         localStorage.setItem("showImageNames", String(showImageNames))
-    }, [showImageNames])
+    }, [showImageNames, initDone])
 
     useEffect(() => {
         controller.saveTierlistLocal()
     }, [tierlistData])
 
     const handleDragStart = (e: DragEvent, item: TierlistItem) => {
+        const el = e.target as HTMLElement;
+
+        // if (el.tagName === "IMG") {
+        //     e.preventDefault();
+        //     setTimeout(() => document.getElementById("t-c")?.click(), 400)
+        //     return;
+        // }
+
+        console.log(el)
+
         e.dataTransfer.setData('itemId', item.id);
     };
 
@@ -155,30 +188,34 @@ export default function CreateTierlistPage() {
             {showDeleteTemplateModal && <DeleteTemplateModal controller={deleteTemplateController}/>}
             {showExportImageModal && <ExportImageModal controller={exportImageController}/>}
             {showShareTierlistModal && <ShareTierlistModal controller={shareTierlistController}/>}
+            {showImagesNamesModal && <Modal controller={showImageNamesController} title={Texts.SHOW_IMAGE_NAMES}
+                                            message={Texts.SHOW_IMAGE_NAME_QUESTION}/>}
 
             <Helmet>
                 <title>{`${tierlist?.name} - Tierlistmaker`}</title>
             </Helmet>
 
-            <Box gridCenter>
+            <Box gridCenter id="t-c" className="select-none">
 
 
                 <Card className="lg:w-5/6 mt-10 p-4 mb-8 w-11/12 overflow-hidden">
 
                     {initDone && tierlist && <Breadcrumb>
-                        <BreadcrumbList className="cursor-pointer">
+                        <BreadcrumbList className="cursor-pointer select-text">
                             <BreadcrumbItem>
                                 <BreadcrumbLink onClick={() => navigate(Paths.HOME)}>{Texts.HOMEPAGE}</BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator/>
                             <BreadcrumbItem>
-                                <BreadcrumbLink>{Texts.CATEGORIES}</BreadcrumbLink>
+                                <BreadcrumbLink
+                                    onClick={() => navigate(Paths.CATEGORIES)}>{Texts.CATEGORIES}</BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator/>
                             <BreadcrumbItem>
-                                <BreadcrumbPage className="text-sm">
+                                <BreadcrumbLink
+                                    onClick={() => navigate(Paths.CATEGORY.replace(":id", tierlist?.categoryId ?? ""))}>
                                     {Texts.SELECTION_CATEGORIES[tierlist.categoryId as keyof TextKeys["SELECTION_CATEGORIES"]]}
-                                </BreadcrumbPage>
+                                </BreadcrumbLink>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>}
@@ -189,7 +226,11 @@ export default function CreateTierlistPage() {
 
                         {initDone &&
                             <Box className="mt-4 lg:flex lg:justify-between space-y-2">
-                                <CardTitle className="text-4xl font-bold">{tierlist?.name} {Texts.TIER_LIST}</CardTitle>
+                                <CardTitle onClick={async () => {
+                                    await setClipboard(tierlist?.name ?? "")
+                                    toast.success(Texts.COPY_SUCCESSFUL)
+                                }}
+                                           className="text-4xl font-bold text-text">{tierlist?.name} {Texts.TIER_LIST}</CardTitle>
 
                                 {tierlist?.showImageNames && <Box className="lg:ml-3 hidden md:block">
                                     <div className="flex items-center">
@@ -207,7 +248,7 @@ export default function CreateTierlistPage() {
                         <Box className="mt-4">
                             {initDone && <Box className="md:flex md:justify-between grid">
                                 <CardDescription
-                                    className="text-lg w-full md:w-9/12">{tierlist?.description}</CardDescription>
+                                    className="select-text text-lg w-full md:w-9/12">{tierlist?.description}</CardDescription>
                                 <Box className="mt-2">
                                     <Button variant="secondary" onClick={controller.toggleVoteTierlist}
                                             disabled={isLoading || !initDone}>
@@ -229,7 +270,7 @@ export default function CreateTierlistPage() {
                     </Box>
 
 
-                    <Box id="tierlist" className={`bg-white dark:bg-[#020817]`}>
+                    <Box id="tierlist" className={`bg-white dark:bg-[#020817] select-none`}>
                         <Box>
                             <Box id="tierlist-inner-container" className={"space-y-2 md:p-5"}>
 
@@ -292,6 +333,7 @@ export default function CreateTierlistPage() {
                         {!initDone && <Skeleton className="w-full h-[200px] flex mb-2"/>}
                     </Box>
 
+
                     <Box className="grid items-center md:flex md:justify-center mt-8 w-full md:spacing-x-2">
 
                         <Button onClick={() => exportImageController.open()} variant="secondary"
@@ -334,7 +376,8 @@ export default function CreateTierlistPage() {
                     <Box className="mt-5">
                         <Separator/>
                         <Box className="md:flex md:justify-start grid mt-2">
-                            {isOwner && <Box>
+
+                            {initDone && isOwner && <>
                                 <Button className="mr-3" disabled={isLoading || !initDone}
                                         onClick={() => navigate(Paths.EDIT_TEMPLATE.replace(":id", tierlist?.id ?? ""))}>
                                     <Edit className="mr-2"/>
@@ -346,7 +389,13 @@ export default function CreateTierlistPage() {
                                     <Trash className="mr-2"/>
                                     {Texts.DELETE}
                                 </Button>
-                            </Box>}
+                            </>}
+
+                            <Button className="ml-3" disabled={isLoading || !initDone}
+                                    onClick={controller.resetTierlist}>
+                                {Texts.RESET_TIERLIST}
+                            </Button>
+
 
                             {tierlist?.showImageNames && <div className="flex items-center md:hidden mt-4">
                                 <Switch checked={showImageNames} onCheckedChange={setShowImageNames}

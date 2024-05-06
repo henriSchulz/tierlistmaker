@@ -1,7 +1,6 @@
 import {initializeApp} from "firebase/app";
 import {getAuth, GoogleAuthProvider} from "firebase/auth";
 import {getStorage} from "firebase/storage";
-import Settings from "@/Settings";
 import {getFirestore} from "@firebase/firestore";
 
 
@@ -23,15 +22,6 @@ const firestore = getFirestore(app);
 
 
 const provider = new GoogleAuthProvider();
-
-if (Settings.ALLOW_COOKIES) {
-    import("firebase/analytics").then(({getAnalytics}) => {
-        console.log("Initializing analytics...");
-        getAnalytics(app);
-
-    }).catch(console.error);
-
-}
 
 
 

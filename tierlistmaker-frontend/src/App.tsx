@@ -17,10 +17,11 @@ import ProfilePage from "@/pages/profile/ProfilePage";
 import PrivacyPolicyPage from "@/pages/privacy-policy/PrivacyPolicyPage";
 import TermsOfServicePage from "@/pages/terms-of-service/TermsOfServicePage";
 import Footer from "@/layout/Footer";
-import CookieConsent from "@/components/CookieConsent";
 import {ThemeProvider} from "@/components/ThemeProvider";
 import SharedTierlistPage from "@/pages/shared/SharedTierlistPage";
 import ImprintPage from "@/pages/imprint/ImprintPage";
+import CategoriesPage from "@/pages/categories/CategoriesPage";
+import CategoryPage from "@/pages/category/CategoryPage";
 
 
 const AuthDoneContext = createContext<boolean>(false)
@@ -52,8 +53,8 @@ function App() {
             <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
                 <Toaster/>
 
-                <CookieConsent onAcceptCallback={controller.cookieConsentAccepted}
-                               onDeclineCallback={controller.cookieConsentDeclined}/>
+                {/*<CookieConsent onAcceptCallback={controller.cookieConsentAccepted}*/}
+                {/*               onDeclineCallback={controller.cookieConsentDeclined}/>*/}
 
                 <div className="flex flex-col h-screen justify-between">
                     <Navigation initDone={initDone} searchTierlists={searchTierlists}/>
@@ -74,6 +75,10 @@ function App() {
                                 <Route path={Paths.TERMS_OF_SERVICE} element={<TermsOfServicePage/>}/>
                                 <Route path={Paths.SHARED} element={<SharedTierlistPage/>}/>
                                 <Route path={Paths.IMPRINT} element={<ImprintPage/>}/>
+                                <Route path={Paths.CATEGORIES} element={<CategoriesPage/>}/>
+                                <Route path={Paths.CATEGORY} element={<CategoryPage/>}/>
+
+                                <Route path="*" element={<NotFoundPage/>}/>
 
                             </Routes>
 

@@ -1,4 +1,4 @@
-import {CircleUser, LogIn, LogOut, Menu, MessageCircleQuestion, Settings, Tornado} from "lucide-react";
+import {CircleUser, LogIn, LogOut, Menu, MessageCircleQuestion, Settings, Tornado, User} from "lucide-react";
 import Texts from "@/text/Texts";
 import {SheetContent, SheetTrigger, Sheet} from "@/components/ui/sheet";
 import {Button} from "@/components/ui/button";
@@ -18,15 +18,16 @@ import {
     CommandGroup,
     CommandInput,
     CommandItem,
-    CommandList,
+    CommandList, CommandSeparator,
 } from "@/components/ui/command"
 import {useEffect, useState} from "react";
 import {useNavigate, useLocation} from "react-router-dom";
 import Paths, {PathUtils} from "@/Paths";
 import LiteTierlist from "@/types/LiteTierlist";
-import {toast} from "sonner";
 import AuthenticationService from "@/services/AuthenticationService";
 import {ModeToggle} from "@/components/ModeToggle";
+import SupportModalController from "@/features/support-modal/SupportModalController";
+import SupportModal from "@/features/support-modal/SupportModal";
 
 
 interface NavigationProps {
@@ -39,8 +40,16 @@ export default function ({searchTierlists}: NavigationProps) {
     const [open, setOpen] = useState(false)
 
     const [showSheet, setShowSheet] = useState(false)
+    const [showSupportModal, setShowSupportModal] = useState(false)
 
     const navigate = useNavigate()
+
+    const supportModalController = new SupportModalController({
+        states: {
+            showState: {val: showSupportModal, set: setShowSupportModal}
+        }
+    })
+
 
     useEffect(() => {
         const down = (e: KeyboardEvent) => {
@@ -58,6 +67,9 @@ export default function ({searchTierlists}: NavigationProps) {
 
 
     return <div>
+
+        {showSupportModal && <SupportModal controller={supportModalController}/>}
+
         <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
             <nav
                 className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
@@ -74,6 +86,11 @@ export default function ({searchTierlists}: NavigationProps) {
                     className="text-foreground transition-colors hover:text-foreground cursor-pointer"
                 >
                     {Texts.HOMEPAGE}
+                </a>
+
+                <a onClick={() => navigate(Paths.CATEGORIES)}
+                   className="text-foreground transition-colors hover:text-foreground cursor-pointer">
+                    {Texts.CATEGORIES}
                 </a>
 
             </nav>
@@ -107,6 +124,14 @@ export default function ({searchTierlists}: NavigationProps) {
                             className="text-foreground transition-colors hover:text-foreground cursor-pointer"
                         >
                             {Texts.HOMEPAGE}
+                        </a>
+
+                        <a onClick={() => {
+                            navigate(Paths.CATEGORIES)
+                            setShowSheet(false)
+                        }}
+                           className="text-foreground transition-colors hover:text-foreground cursor-pointer">
+                            {Texts.CATEGORIES}
                         </a>
 
                         <Button disabled={location.pathname == Paths.CREATE_TEMPLATE}
@@ -161,7 +186,7 @@ export default function ({searchTierlists}: NavigationProps) {
                             {Texts.PROFILE}
 
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => toast.info("Coming soon...")}>
+                        <DropdownMenuItem onClick={supportModalController.open}>
                             <MessageCircleQuestion className="h-4 w-4 mr-2"/>
                             {Texts.SUPPORT}
                         </DropdownMenuItem>
@@ -221,22 +246,25 @@ export default function ({searchTierlists}: NavigationProps) {
                     ))}
                 </CommandGroup>
 
-                {/*<CommandSeparator/>*/}
-                {/*<CommandGroup heading={Texts.SETTINGS}>*/}
-                {/*    <CommandItem>*/}
-                {/*        <User className="h-4 w-4 mr-2"/>*/}
-                {/*        {Texts.PROFILE}*/}
-                {/*    </CommandItem>*/}
+                <CommandSeparator/>
+                <CommandGroup heading={Texts.SETTINGS}>
+                    <CommandItem onSelect={() => {
+                        navigate(Paths.PROFILE)
+                        setOpen(false)
+                    }
+                    }>
+                        <User className="h-4 w-4 mr-2"/>
+                        {Texts.PROFILE}
+                    </CommandItem>
 
-                {/*    <CommandItem>*/}
-                {/*        <MessageCircleQuestion className="h-4 w-4 mr-2"/>*/}
-                {/*        {Texts.SUPPORT}*/}
-                {/*    </CommandItem>*/}
-                {/*    <CommandItem>*/}
-                {/*        <Settings className="h-4 w-4 mr-2"/>*/}
-                {/*        {Texts.SETTINGS}*/}
-                {/*    </CommandItem>*/}
-                {/*</CommandGroup>*/}
+                    <CommandItem onSelect={() => {
+                        supportModalController.open()
+                        setOpen(false)
+                    }}>
+                        <MessageCircleQuestion className="h-4 w-4 mr-2"/>
+                        {Texts.SUPPORT}
+                    </CommandItem>
+                </CommandGroup>
 
             </CommandList>
 

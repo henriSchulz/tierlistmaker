@@ -2,7 +2,7 @@ import State from "@/types/State";
 import LiteTierlist from "@/types/LiteTierlist";
 import {toast} from "sonner";
 import Texts from "@/text/Texts";
-import {collection, getDocs, query, where} from "@firebase/firestore";
+import {collection, getDocs, limit, orderBy, query, where} from "@firebase/firestore";
 import {firestore} from "@/config/firebaseConfig";
 import Tierlist from "@/types/dbmodel/Tierlist";
 import Vote from "@/types/dbmodel/Vote";
@@ -12,6 +12,7 @@ interface HomePageControllerOptions {
         mostVotedTierlistsState: State<LiteTierlist[]>
         mostVotedSportsTierlistsState: State<LiteTierlist[]>
         mostVotedVideoGamesTierlistsState: State<LiteTierlist[]>
+        recentlyCreatedTierlistsState: State<LiteTierlist[]>
         initDoneState: State<boolean>
     }
 }
@@ -39,8 +40,33 @@ export default class HomePageController {
             id: tierlistId,
             name: tierlists.find(tierlist => tierlist.id === tierlistId)!.name
         }))
+    }
 
 
+    loadRecentlyCreatedTierlists = async (): Promise<LiteTierlist[]> => {
+        try {
+            const tierlistsSnapshot = await getDocs(
+                query(collection(firestore, "tierlists"),
+                    where("public", "==", true),
+                    orderBy("createdAt", "desc"),
+                    limit(5)
+                )
+            )
+
+            return tierlistsSnapshot.docs.map(doc => {
+                const data = doc.data() as Tierlist
+                return {
+                    id: data.id,
+                    name: data.name
+                }
+            })
+
+        } catch (e) {
+            toast.error(Texts.API_REQUEST_FAILED)
+            console.log(e)
+            return []
+
+        }
     }
 
     init = async () => {
@@ -61,10 +87,12 @@ export default class HomePageController {
             const mostVotedTierlists = await this.loadMostVotedTierlists(tierlists, votes)
             const mostVotedSportsTierlists = await this.loadMostVotedTierlists(tierlists.filter(tierlist => tierlist.categoryId === "SPORTS"), votes)
             const mostVotedVideoGamesTierlists = await this.loadMostVotedTierlists(tierlists.filter(tierlist => tierlist.categoryId === "VIDEO_GAMES"), votes)
+            const recentlyCreatedTierlists = await this.loadRecentlyCreatedTierlists()
 
             this.states.mostVotedTierlistsState.set(mostVotedTierlists)
             this.states.mostVotedSportsTierlistsState.set(mostVotedSportsTierlists)
             this.states.mostVotedVideoGamesTierlistsState.set(mostVotedVideoGamesTierlists)
+            this.states.recentlyCreatedTierlistsState.set(recentlyCreatedTierlists)
             this.states.initDoneState.set(true)
 
         } catch (e) {

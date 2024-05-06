@@ -756,7 +756,7 @@ export async function updateTemplateCover(req: express.Request, res: express.Res
         const file = app.bucket.file(`${tierlistId}/cover.png`)
         const [exists] = await file.exists()
         if (exists) await file.delete()
-        else return res.status(404).json({error: "Cover image not found"})
+        //else return res.status(404).json({error: "Cover image not found"})
 
     } catch (e: any) {
         logger.error("Failed to get tierlist files: " + e.message)

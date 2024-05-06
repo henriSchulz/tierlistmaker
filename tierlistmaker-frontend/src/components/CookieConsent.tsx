@@ -22,6 +22,7 @@ export default function CookieConsent({
         onAcceptCallback();
     };
 
+    // @ts-ignore
     const decline = () => {
         setIsOpen(false);
         setTimeout(() => {
@@ -67,7 +68,7 @@ export default function CookieConsent({
                     </div>
                     <div className="flex gap-2 p-4 py-5 border-t border-border bg-background/20">
                         <Button onClick={accept} className="w-full">{Texts.ACCEPT}</Button>
-                        <Button onClick={decline} className="w-full" variant="secondary">{Texts.DECLINE}</Button>
+                        {/*<Button onClick={decline} className="w-full" variant="secondary">{Texts.DECLINE}</Button>*/}
                     </div>
                 </div>
             </div>

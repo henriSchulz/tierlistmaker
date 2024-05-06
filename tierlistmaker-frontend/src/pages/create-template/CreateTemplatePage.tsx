@@ -26,10 +26,11 @@ import GoogleImageSearchModal from "@/features/google-images-search/GoogleImageS
 
 import Google from "@/assets/google.svg";
 import {urlToFile} from "@/utils";
+import {Helmet} from "react-helmet";
 
 
 export default function () {
-
+    const [searchParams, setSearchParams] = useSearchParams()
 
     const [numberOfRows, setNumberOfRows] = useState(CreateTemplatePageController.DEFAULT_NUMBER_OF_ROWS)
     const [step, setStep] = useState(0)
@@ -37,7 +38,7 @@ export default function () {
         localStorage.getItem("templateName") || ""
     )
     const [templateCategory, setTemplateCategory] = useState<string | undefined>(
-        localStorage.getItem("templateCategory") || undefined
+        searchParams.get("c") || localStorage.getItem("templateCategory") || undefined
     )
     const [templateCoverImage, setTemplateCoverImage] = useState<File | null>(null)
     const [templateImages, setTemplateImages] = useState<File[]>([])
@@ -54,7 +55,7 @@ export default function () {
     const [searchInput, setSearchInput] = useState("")
     const [currentImages, setCurrentImages] = useState<{ src: string, title: string }[]>([])
     const [selectedImages, setSelectedImages] = useState<{ src: string, title: string }[]>([])
-    const [searchParams, setSearchParams] = useSearchParams()
+
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
 
@@ -134,11 +135,24 @@ export default function () {
     }, [templateDescription])
 
     useEffect(() => {
-        localStorage.setItem("templateCategory", templateCategory || "")
+
+        if (Object.keys(Texts.SELECTION_CATEGORIES).includes(templateCategory || "")) {
+            localStorage.setItem("templateCategory", templateCategory || "")
+        } else {
+            setTemplateCategory(undefined)
+        }
+
+
     }, [templateCategory])
 
 
     return <Box gridCenter>
+
+        <Helmet>
+            <title>
+                {Texts.CREATE_NEW_TEMPLATE} - Tierlistmaker
+            </title>
+        </Helmet>
 
 
         {showSearchGoogleImagesModal && <GoogleImageSearchModal controller={googleImageSearchController}/>}

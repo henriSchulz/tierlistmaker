@@ -5,6 +5,7 @@ import fs from "fs";
 import path from "path";
 import Tierlist from "./types/dbmodel/Tierlist";
 import {stopWords} from "./stopwords";
+import {adminScripts} from "./admin";
 
 
 dotenv.config()
@@ -33,6 +34,20 @@ const getKeyWords = (tierlist: Tierlist): string => {
 }
 
 
+function send404(res: functions.Response) {
+    let data = fs.readFileSync(path.join(__dirname, "dynamic-meta-public", "index.html"), "utf8");
+
+    data = data.replace(/__TITLE__/g, `404 - Page Not Found`);
+    data = data.replace(/__DESCRIPTION__/g, "The page you are looking for does not exist");
+    data = data.replace(/__IMAGE__/g, `https://tierlistmaker.org/assets/404-BhjNQ4lk.svg`);
+    data = data.replace(/__URL__/g, `https://tierlistmaker.org/404`);
+    data = data.replace(/__KEYWORDS__/g, "404, Page Not Found");
+
+    //sendfile index.html with header text/html
+    return res.setHeader('Content-Type', 'text/html').send(data);
+}
+
+
 // @ts-ignore
 const create = functions.https.onRequest(async (req, res) => {
     const splitPath = req.path.split("/");
@@ -42,14 +57,14 @@ const create = functions.https.onRequest(async (req, res) => {
 
         if (!pathId.includes("-")) {
             console.log("Redirect: Invalid id")
-            return res.redirect("/404")
+            return send404(res)
         }
 
         const id = pathId.split("-").pop();
 
         if (!id) {
             console.log("Redirect: ID not found")
-            return res.redirect("/404")
+            return send404(res)
         }
 
         try {
@@ -62,7 +77,7 @@ const create = functions.https.onRequest(async (req, res) => {
 
             if (!tierlist) {
                 console.log("Redirect: Tierlist not found")
-                return res.redirect("/404")
+                return send404(res)
             }
 
             const {name, description} = tierlist;
@@ -87,7 +102,7 @@ const create = functions.https.onRequest(async (req, res) => {
 
     } else {
         console.log("Redirect: Invalid path structure")
-        return res.redirect("/404")
+        return send404(res)
     }
 })
 
@@ -100,27 +115,27 @@ const shared = functions.https.onRequest(async (req, res) => {
 
         if (!pathId.includes("-")) {
             console.log("Redirect: Invalid id")
-            return res.redirect("/404")
+            return send404(res)
         }
 
         const id = pathId.split("-").pop();
 
         if (!id) {
             console.log("Redirect: ID not found")
-            return res.redirect("/404")
+            return send404(res)
         }
 
         const createdBy = req.query["createdBy"] as string
 
         if (!createdBy) {
             console.log("Redirect: Created by not found")
-            return res.redirect("/404")
+            return send404(res)
         }
         const data = req.query["data"] as string
 
         if (!data) {
             console.log("Redirect: Data not found")
-            return res.redirect("/404")
+            return send404(res)
         }
 
         try {
@@ -133,7 +148,7 @@ const shared = functions.https.onRequest(async (req, res) => {
 
             if (!tierlist) {
                 console.log("Redirect: Tierlist not found")
-                return res.redirect("/404")
+                return send404(res)
             }
 
             const {name} = tierlist;
@@ -143,7 +158,7 @@ const shared = functions.https.onRequest(async (req, res) => {
 
             if (!user) {
                 console.log("Redirect: User not found")
-                return res.redirect("/404")
+                return send404(res)
             }
             const userName = user.displayName?.split(" ")[0] ?? user.displayName ?? "User";
 
@@ -167,9 +182,14 @@ const shared = functions.https.onRequest(async (req, res) => {
 
     } else {
         console.log("Redirect: Invalid path structure")
-        return res.redirect("/404")
+        return send404(res)
     }
 })
 
 
 export {api, create, shared}
+
+
+adminScripts()
+
+

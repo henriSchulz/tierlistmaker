@@ -12,6 +12,7 @@ import {ArrowRight} from "lucide-react";
 import AuthenticationService from "@/services/AuthenticationService";
 import Paths from "@/Paths";
 import {useNavigate} from "react-router-dom";
+import {Helmet} from "react-helmet";
 
 
 export default function () {
@@ -20,7 +21,7 @@ export default function () {
     const [mostVotedTierlists, setMostVotedTierlists] = useState<LiteTierlist[]>([])
     const [mostVotedSportsTierlists, setMostVotedSportsTierlists] = useState<LiteTierlist[]>([])
     const [mostVotedVideoGamesTierlists, setMostVotedVideoGamesTierlists] = useState<LiteTierlist[]>([])
-
+    const [recentlyCreatedTierlists, setRecentlyCreatedTierlists] = useState<LiteTierlist[]>([])
 
     const navigate = useNavigate()
 
@@ -29,7 +30,8 @@ export default function () {
             initDoneState: {val: initDone, set: setInitDone},
             mostVotedTierlistsState: {val: mostVotedTierlists, set: setMostVotedTierlists},
             mostVotedSportsTierlistsState: {val: mostVotedSportsTierlists, set: setMostVotedSportsTierlists},
-            mostVotedVideoGamesTierlistsState: {val: mostVotedVideoGamesTierlists, set: setMostVotedVideoGamesTierlists}
+            mostVotedVideoGamesTierlistsState: {val: mostVotedVideoGamesTierlists, set: setMostVotedVideoGamesTierlists},
+            recentlyCreatedTierlistsState: {val: recentlyCreatedTierlists, set: setRecentlyCreatedTierlists}
         }
     })
 
@@ -39,6 +41,14 @@ export default function () {
 
 
     return <Box className="overflow-hidden">
+
+
+        <Helmet>
+            <title>
+                Create, Share, and Explore Tier Lists - Tierlistmaker
+            </title>
+        </Helmet>
+
         <Box className="mt-5 w-11/12 lg:mx-20 mx-5 lg:flex lg:content-center lg:items-center grid">
             <Box>
                 <h1 dangerouslySetInnerHTML={{__html: Texts.SLOGAN_HTML}}
@@ -64,7 +74,7 @@ export default function () {
             </Box>
 
 
-            <img className="w-full lg:w-7/12" src={Office}/>
+            <img draggable="false" className="w-full lg:w-7/12 selector" src={Office}/>
 
         </Box>
 
@@ -92,10 +102,32 @@ export default function () {
 
                         </Box>
                         <ScrollBar orientation={"horizontal"}/>
-                        <ScrollBar orientation={"horizontal"}/>
                     </ScrollArea>
                 </Box>
             </Box>
+
+            <Box className="mt-16">
+                <h2 className="text-4xl font-extrabold dark:text-white">
+                    {Texts.RECENTLY_CREATED_TEMPLATES}
+                </h2>
+                <Separator className="my-2"/>
+                <Box>
+                    <ScrollArea className="w-full whitespace-nowrap gap-4">
+                        <Box className="flex w-max space-x-4 p-4">
+                            {initDone && recentlyCreatedTierlists.map((data, index) => {
+                                return <TierListCard key={index} tierlist={data}/>
+                            })}
+
+                            {!initDone && Array.from({length: 5}).map((_, index) => (
+                                <TierlistCardSkeleton key={index}/>))}
+
+                        </Box>
+                        <ScrollBar orientation="horizontal"/>
+                    </ScrollArea>
+                </Box>
+            </Box>
+
+
 
             <Box className="mt-16">
                 <h2 className="text-4xl font-extrabold dark:text-white">

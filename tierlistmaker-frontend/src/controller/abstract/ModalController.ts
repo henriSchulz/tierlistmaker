@@ -15,7 +15,7 @@ export default abstract class ModalController<T extends ModalControllerOptions> 
     public states: T["states"]
 
 
-    protected constructor(options: T) {
+     constructor(options: T) {
         this.states = options.states
 
     }

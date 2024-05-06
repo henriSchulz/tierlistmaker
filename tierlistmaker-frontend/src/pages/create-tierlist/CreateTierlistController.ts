@@ -26,6 +26,8 @@ export interface CreateTierlistControllerOptions {
         isLoadingState: State<boolean>
         tierlistVotesState: State<number>
         isExportingState: State<boolean>
+        showImagesNamesState: State<boolean>
+        showImageNamesModalState: State<boolean>
     },
     navigate: NavigateFunction
 }
@@ -59,7 +61,6 @@ export default class CreateTierlistController {
         }
 
 
-
         let tierlist: Tierlist
         let tierlistRows: TierlistRow[]
         let tierlistItems: TierlistItem[]
@@ -77,7 +78,6 @@ export default class CreateTierlistController {
         }
 
 
-
         try {
             const q = query(collection(firestore, "tierlistRows"), where("tierlistId", "==", tierlistId))
             const snapshot = await getDocs(q)
@@ -89,7 +89,6 @@ export default class CreateTierlistController {
         }
 
 
-
         try {
             const q = query(collection(firestore, "tierlistItems"), where("tierlistId", "==", tierlistId))
             const snapshot = await getDocs(q)
@@ -99,7 +98,6 @@ export default class CreateTierlistController {
         }
 
 
-
         try {
             const q = query(collection(firestore, "votes"), where("tierlistId", "==", tierlistId))
             const snapshot = await getCountFromServer(q)
@@ -107,7 +105,6 @@ export default class CreateTierlistController {
         } catch (e) {
             return this.navigate(Paths.NOT_FOUND)
         }
-
 
 
         try {
@@ -123,12 +120,23 @@ export default class CreateTierlistController {
         }
 
 
-
-
         this.states.tierlistState.set(tierlist)
         this.states.tierlistRowsState.set(tierlistRows)
         this.states.tierlistItemsState.set(tierlistItems)
         this.states.tierlistVotesState.set(votes)
+
+        if (tierlist.showImageNames) {
+            const localStorageShowImageNames = localStorage.getItem("showImageNames")
+
+            if (!localStorageShowImageNames ) {
+                this.states.showImageNamesModalState.set(true)
+            } else {
+                this.states.showImagesNamesState.set(
+                    localStorageShowImageNames === "true"
+                )
+            }
+        }
+
 
         if (localStorage.getItem(tierlistId)) {
             this.loadTierlistLocal(tierlist, tierlistItems)
@@ -139,8 +147,6 @@ export default class CreateTierlistController {
             }))
             this.states.tierlistDataState.set(tierlistData)
         }
-
-
 
 
         this.states.initDoneState.set(true)
@@ -312,6 +318,17 @@ export default class CreateTierlistController {
         const id = AuthenticationService.current!.id
 
         return `${window.location.href.replace("create", "shared")}?data=${data}&createdBy=${encodeURIComponent(id)}`
+    }
+
+    resetTierlist = () => {
+        const tierlistData = this.states.tierlistDataState.val
+        if (!tierlistData) return
+        const tierlistItems = this.states.tierlistItemsState.val
+        if (!tierlistItems) return
+
+        const newTierlistData = tierlistItems.map(item => ({...item, rowId: "default"}))
+
+        this.states.tierlistDataState.set(newTierlistData)
     }
 
 

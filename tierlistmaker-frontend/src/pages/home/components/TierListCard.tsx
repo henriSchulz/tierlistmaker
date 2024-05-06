@@ -52,9 +52,9 @@ export default function ({tierlist}: TierListCardProps) {
     return <Card className="p-4">
         <Box>
             <h3 style={{maxWidth: WIDTH}}
-                className="font-bold text-lg overflow-hidden text-ellipsis">{tierlist.name}</h3>
+                className="font-bold text-lg overflow-hidden text-ellipsis grays">{tierlist.name}</h3>
 
-            <img width={WIDTH} className="aspect-square object-fill object-center selector"
+            <img draggable="false" width={WIDTH} className="aspect-square object-fill object-center selector"
                  src={imgSrc}
                  style={{display: imageLoaded ? 'block' : 'none'}}
                  alt={tierlist.name}

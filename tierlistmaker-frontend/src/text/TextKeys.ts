@@ -22,6 +22,7 @@ interface TextKeys {
     TIER_LIST_DEFINITION: string
     TIER_SORT_MOST_VOTED: string
     VIDEOS_GAMES_TEMPLATES: string
+    RECENTLY_CREATED_TEMPLATES: string
     SPORTS_TEMPLATES: string
     MUSIC_TEMPLATES: string
     RANK_NOW: string
@@ -55,6 +56,7 @@ interface TextKeys {
     TOO_MANY_TEMPLATE_IMAGES: string
     PLEASE_SELECT_TEMPLATE_IMAGES: string
     CREATE_TEMPLATE: string
+    CREATE_CATEGORY_TEMPLATE: string
     TEMPLATE_DESCRIPTION: string
     TEMPLATE_DESCRIPTION_EXAMPLE: string
     ENTER_A_TEMPLATE_DESCRIPTION: string
@@ -154,6 +156,14 @@ interface TextKeys {
     ADDED_IMAGES: string
     FAILED_TO_ADD_IMAGES: string
     GOOGLE_IMAGES: string
+    SUPPORT_MESSAGE: string
+    NO_TEMPLATES: string
+    VIEW_TEMPLATES: string
+    CATEGORIES_PAGE_DESCRIPTION: string
+    TEMPLATES: string
+    RESET_TIERLIST: string
+    COPY_SUCCESSFUL: string
+    SHOW_IMAGE_NAME_QUESTION: string
 
 
     SELECTION_CATEGORIES: {

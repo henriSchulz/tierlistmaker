@@ -13,6 +13,7 @@ enum Paths {
     TERMS_OF_SERVICE = "/terms-of-service",
     SHARED = "/shared/:id",
     IMPRINT = "/imprint",
+    CATEGORY = "/category/:id",
 }
 
 

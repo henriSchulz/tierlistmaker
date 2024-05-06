@@ -22,6 +22,35 @@
     <script id="DragDropTouch" src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7353861377448231"
             crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://www.termsfeed.com/public/cookie-consent/4.1.0/cookie-consent.js"
+            charset="UTF-8"></script>
+    <script type="text/javascript" charset="UTF-8">
+        document.addEventListener('DOMContentLoaded', function () {
+            cookieconsent.run({
+                "notice_banner_type": "interstitial",
+                "consent_type": "express",
+                "palette": "light",
+                "language": "en",
+                "page_load_consent_levels": ["strictly-necessary"],
+                "notice_banner_reject_button_hide": false,
+                "preferences_center_close_button_hide": false,
+                "page_refresh_confirmation_buttons": false,
+                "website_name": "Tierlistmaker.org"
+            });
+
+            const container = document.getElementsByClassName("cc-nb-buttons-container")[0];
+
+            if (container) {
+                for (let i = 0; i < container.children.length - 1; i++) {
+                    container.children[i].classList.add("btn");
+                }
+            } else {
+                console.error("Cookie consent container not found");
+            }
+
+
+        });
+    </script>
 </head>
 <body>
 <div id="root"></div>

@@ -13,6 +13,7 @@ import TierListCard, {TierlistCardSkeleton} from "@/pages/home/components/TierLi
 import {Skeleton} from "@/components/ui/skeleton";
 import {useAuthDone} from "@/App";
 import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
+import {Helmet} from "react-helmet";
 
 
 export default function () {
@@ -40,6 +41,12 @@ export default function () {
 
     return (
         <Box gridCenter className="w-full">
+
+            <Helmet>
+                <title>
+                    {Texts.PROFILE} - Tierlistmaker
+                </title>
+            </Helmet>
 
             <Card className="mt-10 w-11/12 lg:w-2/3 mb-8 overflow-hidden">
                 <CardHeader>

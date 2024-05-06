@@ -6,7 +6,6 @@ import ApiService from "@/services/ApiService";
 import {NavigateFunction} from "react-router-dom";
 import AuthenticationService from "@/services/AuthenticationService";
 import Paths from "@/Paths";
-import AppController from "@/controller/AppController";
 import React from "react";
 
 interface CreateTemplatePageControllerOptions {
@@ -50,10 +49,8 @@ export default class CreateTemplatePageController {
 
     init = () => {
 
-        if (!AppController.INITIAL_INIT_DONE) return
-
         if (!AuthenticationService.current) {
-            this.navigate(Paths.SIGN_IN + "?redirect=" + Paths.CREATE_TEMPLATE)
+           return this.navigate(Paths.SIGN_IN + "?redirect=" + Paths.CREATE_TEMPLATE)
         }
     }
 

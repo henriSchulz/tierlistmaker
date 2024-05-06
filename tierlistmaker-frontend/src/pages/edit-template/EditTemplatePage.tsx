@@ -26,6 +26,7 @@ import GoogleImageSearchController from "@/features/google-images-search/GoogleI
 import {urlToFile} from "@/utils";
 import Google from "@/assets/google.svg";
 import {cn} from "@/lib/utils";
+import {Helmet} from "react-helmet";
 
 
 export default function () {
@@ -125,6 +126,12 @@ export default function () {
 
 
     return <Box className="w-full">
+
+        <Helmet>
+            <title>
+                {Texts.EDIT_TEMPLATE} - Tierlistmaker
+            </title>
+        </Helmet>
 
 
         {showSearchGoogleImagesModal && <GoogleImageSearchModal controller={googleImageSearchController}/>}

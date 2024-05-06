@@ -54,6 +54,7 @@
 @layer base {
     * {
         @apply border-border;
+        -webkit-font-smoothing: antialiased;
     }
 
     body {
@@ -71,24 +72,27 @@
 }
 
 .tier-list-item-text {
-    color: #fff;
-    text-shadow: 2px 2px 0px #1E9EE6, 4px 4px 0px rgba(0, 0, 0, 0.25);
+    font-family: 'Rocher';
+    font-palette: --Blue;
 
 
     position: absolute;;
-    top: 50%;
+    bottom: 10%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
     font-weight: bold;
     overflow: hidden;
     font-size: 1em;
     word-wrap: break-word;
     overflow-wrap: break-word;
 
+
 }
 
 .title {
     font-family: "Pacifico", cursive;
+    /*font-family: 'Rocher';*/
+    font-palette: --Grays;
     font-weight: 400;
     font-style: normal;
 }
@@ -115,3 +119,66 @@
 .delete-tierlist-item:active {
     scale: 1.15;
 }
+
+.ppc > p {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.btn {
+    background-color: #2563eb !important;
+    border-radius: 6px !important;
+}
+
+.unselectable {
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+
+    /*
+      Introduced in IE 10.
+      See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
+    */
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.tier-head {
+    border-right: none;
+}
+
+.tier {
+    width: 100%;
+    display: flex;
+    justify-items: center;
+    justify-content: start;
+}
+
+.tier-items {
+    border-left: none;
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+}
+
+@font-face {
+    font-family: 'Rocher';
+    src: url(assets/RocherColorGX.woff2);
+}
+
+
+@font-palette-values --Blue {
+    font-family: Rocher;
+    base-palette: 10;
+}
+
+
+.blues {
+    font-family: 'Rocher';
+    font-palette: --Blue;
+    font-size: 1em;
+    cursor: alias;
+}
+
+
+
+
+

@@ -81,6 +81,7 @@ const en: TextKeys = {
     TIER_LISTS: "Tier Lists",
     NO_SPORTS_TEMPLATES: "There are no sports templates available at the moment.",
     NO_VOTED_TEMPLATES: "There are no voted templates available at the moment.",
+    NO_TEMPLATES: "There are no {category} templates available at the moment.",
     NO_VIDEO_GAMES_TEMPLATES: "There are no video games templates available at the moment.",
     LINK_GOOGLE_ACCOUNT: "Link Google Account",
     LINK_GOOGLE_ACCOUNT_DESCRIPTION: "Link your Google account to create tier list templates and vote on other tier lists. This will also allow you to access your tier lists on other devices.",
@@ -158,6 +159,19 @@ const en: TextKeys = {
     ADDING_IMAGES: "Adding Image(s)",
     GOOGLE_IMAGES: "Google Images",
     FAILED_TO_ADD_IMAGES: "Failed to add image(s)",
+    SUPPORT_MESSAGE: `
+<span class="text-xs">If you need help or have any questions, please contact us at <a href="mailto:contact@tierlistmaker.org" class="text-primary">
+contact@tierlistmaker.org
+</a></span>
+    `,
+    VIEW_TEMPLATES: "View Templates",
+    CATEGORIES_PAGE_DESCRIPTION: "Explore a variety of categories on Tierlistmaker.org, including popular culture, gaming, food, and more, to discover and create tierlists on a wide range of subjects.",
+    TEMPLATES: "Templates",
+    CREATE_CATEGORY_TEMPLATE: "Create a {category} Template",
+    RECENTLY_CREATED_TEMPLATES: "Recently Created Templates",
+    RESET_TIERLIST: "Reset Tierlist",
+    COPY_SUCCESSFUL: "Copied to clipboard",
+    SHOW_IMAGE_NAME_QUESTION: "Do you want to show image names on the tier list?",
 
 
     formatDate: (date: Date) => {
