@@ -128,8 +128,8 @@ export async function createTierlistTemplate(req: express.Request, res: express.
         description: string
         categoryId: string
         "rowNames": string
-        publicTemplate: number
-        showImageNames: number
+        publicTemplate: string
+        showImageNames: string
     }
 
 
@@ -157,8 +157,8 @@ export async function createTierlistTemplate(req: express.Request, res: express.
     if (body.description.trim().length > 500) return res.status(422).json({error: "Description too long"})
     if (body.categoryId.trim().length === 0) return res.status(422).json({error: "No category selected"})
     if (!CATEGORIES.includes(body.categoryId)) return res.status(422).json({error: "Invalid category selected"})
-    if (!body.publicTemplate) return res.status(422).json({error: "No publicTemplate provided"})
-    if (!body.showImageNames) return res.status(422).json({error: "No showImageNames provided"})
+    // if (!body.publicTemplate) return res.status(422).json({error: "No publicTemplate provided"})
+    // if (!body.showImageNames) return res.status(422).json({error: "No showImageNames provided"})
 
 
     // @ts-ignore
@@ -172,7 +172,7 @@ export async function createTierlistTemplate(req: express.Request, res: express.
     if (!templateImgs) return res.status(422).json({error: "No template images uploaded"})
 
 
-    if (templateImgs.length < 4) return res.status(422).json({error: "Not enough template images uploaded"})
+    if (templateImgs.length < 2) return res.status(422).json({error: "Not enough template images uploaded"})
 
     if (templateImgs.length > 50) return res.status(422).json({error: "Too many template images uploaded"})
 
@@ -200,7 +200,7 @@ export async function createTierlistTemplate(req: express.Request, res: express.
         // const allowedFileTypes = ["png", "jpg", "jpeg", "heic"]
         // if (!allowedFileTypes.includes(fileType.toLowerCase())) return res.status(422).json({error: "Invalid cover image format"})
 
-        let buffer: Buffer = await sharp(coverImg.buffer).toFormat("png").resize(250, 250).png({
+        let buffer: Buffer = await sharp(coverImg.buffer).toFormat("png").png({
             compressionLevel: 3,
             force: true
         }).toBuffer()
@@ -246,7 +246,8 @@ export async function createTierlistTemplate(req: express.Request, res: express.
             await app.bucket.file(path).save(buffer, {contentType})
 
 
-            let fileName = Buffer.from(img.originalname, 'latin1').toString('utf8');
+            let fileName = img.originalname
+
             const fileExtension = fileName.split(".").pop()
             fileName = fileName.replace(`.${fileExtension}`, "")
             if (fileName.length > 34) fileName = fileName.slice(0, 34)
@@ -281,8 +282,8 @@ export async function createTierlistTemplate(req: express.Request, res: express.
         description: body.description,
         categoryId: body.categoryId,
         clientId: client.id,
-        public: Boolean(body.publicTemplate),
-        showImageNames: Boolean(body.showImageNames),
+        public: body.publicTemplate === "true",
+        showImageNames: body.showImageNames === "true",
         createdAt: Date.now(),
         lastModifiedAt: Date.now()
     }
@@ -628,7 +629,7 @@ export async function addTemplateImages(req: express.Request, res: express.Respo
 
             await app.bucket.file(path).save(buffer, {contentType})
 
-            let fileName = Buffer.from(img.originalname, 'latin1').toString('utf8');
+            let fileName = img.originalname
             const fileExtension = fileName.split(".").pop()
             fileName = fileName.replace(`.${fileExtension}`, "")
             if (fileName.length > 34) fileName = fileName.slice(0, 34)
@@ -771,7 +772,7 @@ export async function updateTemplateCover(req: express.Request, res: express.Res
         // const allowedFileTypes = ["png", "jpg", "jpeg"]
         // if (!allowedFileTypes.includes(fileType.toLowerCase())) return res.status(422).json({error: "Invalid cover image format"})
 
-        let buffer: Buffer = await sharp(coverImg.buffer).toFormat("png").resize(250, 250).png({
+        let buffer: Buffer = await sharp(coverImg.buffer).toFormat("png").png({
             compressionLevel: 3,
             force: true
         }).toBuffer()

@@ -1,11 +1,11 @@
-import {Card} from "@/components/ui/card";
+
 import {Helmet} from "react-helmet";
 
 
 export default function () {
 
 
-    return <Card className="lg:mx-20 mx-5 mt-8 mb-8">
+    return <div className="max-w-screen-lg mt-8 mb-8 mx-auto border-2 bg-white border-gray-100 rounded-2xl">
 
         <Helmet>
             <title>
@@ -42,6 +42,6 @@ export default function () {
         </div>
 
 
-    </Card>
+    </div>
 
 }

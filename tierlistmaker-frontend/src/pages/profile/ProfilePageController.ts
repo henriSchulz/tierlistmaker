@@ -28,7 +28,7 @@ export default class ProfilePageController {
 
     public async init() {
 
-        if (!AuthenticationService.current) return this.navigate(Paths.SIGN_IN)
+        if (!AuthenticationService.current) return this.navigate(Paths.HOME)
 
         const {success, templates} = await ApiService.loadClientTemplates()
 

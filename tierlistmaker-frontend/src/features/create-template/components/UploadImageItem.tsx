@@ -1,6 +1,6 @@
-import {Box} from "@/components/ui/box";
 import {Trash} from "lucide-react";
 import {useState} from "react";
+import {motion} from "framer-motion";
 
 interface UploadImageItemProps {
     image: File
@@ -20,7 +20,8 @@ export default function ({image, deleteItem}: UploadImageItemProps) {
         setHovering(false);
     }
 
-    return <Box onClick={deleteItem} className="relative delete-tierlist-item" onMouseEnter={onHover}
+    return <motion.div whileHover={{scale: 0.97}} whileTap={{scale: 0.93}}
+                       onClick={deleteItem} className="relative delete-tierlist-item" onMouseEnter={onHover}
                 onMouseLeave={onLeave}
     >
         <img className="h-10 w-10 aspect-square object-fill object-center"
@@ -30,5 +31,5 @@ export default function ({image, deleteItem}: UploadImageItemProps) {
             <Trash/>
         </div>}
 
-    </Box>
+    </motion.div>
 }

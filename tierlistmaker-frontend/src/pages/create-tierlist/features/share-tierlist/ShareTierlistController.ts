@@ -1,7 +1,6 @@
 import ModalController, {ModalControllerOptions} from "@/controller/abstract/ModalController";
 import CreateTierlistController from "@/pages/create-tierlist/CreateTierlistController";
 import AuthenticationService from "@/services/AuthenticationService";
-import Paths from "@/Paths";
 
 interface ShareTierlistControllerOptions extends ModalControllerOptions {
     controller: CreateTierlistController
@@ -18,7 +17,7 @@ export default class ShareTierlistController extends ModalController<ShareTierli
     open = () => {
 
         if (!AuthenticationService.current) {
-            this.controller.navigate(Paths.SIGN_IN + "?redirect=" + window.location.pathname)
+            this.controller.states.showSignInSheetState.set(true)
         }
 
         this.states.showState.set(true)

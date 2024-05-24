@@ -10,7 +10,7 @@ import Settings from "@/Settings";
 import {toast} from "sonner";
 import Texts from "@/text/Texts";
 
-import CreateTemplatePageController from "@/pages/create-template/CreateTemplatePageController";
+import CreateTemplateController from "@/features/create-template/CreateTemplateController";
 import {getTextFieldValue} from "@/utils";
 import React from "react";
 
@@ -29,6 +29,7 @@ interface EditTemplateControllerOptions {
         templateImagesToAddState: State<File[]>
         initDoneState: State<boolean>
         numberOfRowsState: State<number>
+        currentTapState: State<number>
     },
     navigate: NavigateFunction
 }
@@ -125,25 +126,18 @@ export default class EditTemplateController {
             },
             success: () => {
                 this.states.loadingState.set(false)
+                window.location.reload()
                 return Texts.TIERLIST_INFORMATION_UPDATED
 
             }
         })
     }
 
-    onUpdateImages = async () => {
-
-        if (!this.states.tierlistState.val) return toast.error(Texts.TIERLIST_NOT_FOUND)
-
+    onUpdateCover = async () => {
+        const coverToUpdate = this.states.templateCoverImageToUpdateState.val
         const tierlist = this.states.tierlistState.val
 
-        const itemsToDelete = this.states.tierlistItemIdsToDeleteState.val
-
-        const imagesToAdd = this.states.templateImagesToAddState.val
-
-        const currentItems = this.states.tierlistItemsState.val
-
-        const coverToUpdate = this.states.templateCoverImageToUpdateState.val
+        if (!tierlist) return
 
         if (coverToUpdate) {
             const tenMB = 10 * 1024 * 1024
@@ -158,6 +152,35 @@ export default class EditTemplateController {
                 })
             }
         }
+
+        if (coverToUpdate) {
+            await new Promise<void>(resolve => {
+                toast.promise(ApiService.updateCoverImage(tierlist.id, coverToUpdate), {
+                    loading: Texts.UPDATING_COVER_IMAGE + "...",
+                    error: Texts.UPDATING_COVER_IMAGE_FAILED,
+                    success: () => {
+                        resolve()
+                        return Texts.COVER_IMAGE_UPDATED
+                    }
+                })
+            })
+            window.location.reload()
+        }
+
+    }
+
+    onUpdateImages = async () => {
+
+        if (!this.states.tierlistState.val) return toast.error(Texts.TIERLIST_NOT_FOUND)
+
+        const tierlist = this.states.tierlistState.val
+
+        const itemsToDelete = this.states.tierlistItemIdsToDeleteState.val
+
+        const imagesToAdd = this.states.templateImagesToAddState.val
+
+        const currentItems = this.states.tierlistItemsState.val
+
 
         if (imagesToAdd.length > 50) {
             return toast.error(Texts.TOO_MANY_TEMPLATE_IMAGES, {
@@ -224,20 +247,6 @@ export default class EditTemplateController {
             })
         }
 
-
-        if (coverToUpdate) {
-            await new Promise<void>(resolve => {
-                toast.promise(ApiService.updateCoverImage(tierlist.id, coverToUpdate), {
-                    loading: Texts.UPDATING_COVER_IMAGE + "...",
-                    error: Texts.UPDATING_COVER_IMAGE_FAILED,
-                    success: () => {
-                        resolve()
-                        return Texts.COVER_IMAGE_UPDATED
-                    }
-                })
-            })
-        }
-
         if (itemsToDelete.length > 0) {
             await new Promise<void>(resolve => {
                 toast.promise(ApiService.deleteTemplateImages(tierlist.id, itemsToDelete), {
@@ -265,7 +274,7 @@ export default class EditTemplateController {
             })
         }
 
-        window.location.href = Paths.EDIT_TEMPLATE.replace(":id", tierlist.id) + "?tab=2"
+        window.location.reload()
 
 
     }
@@ -276,7 +285,7 @@ export default class EditTemplateController {
         const tierlistRows = this.states.tierlistRowsState.val
 
         const rowNames = Array.from({length: this.states.numberOfRowsState.val}, (_, i) => {
-            return getTextFieldValue(`row-${i}`) ?? CreateTemplatePageController.DEFAULT_ROW_NAMES[i]
+            return getTextFieldValue(`row-${i}`) ?? CreateTemplateController.DEFAULT_ROW_NAMES[i]
         })
 
         const rowsToUpdate: { id: string, name: string }[] = []
@@ -308,7 +317,7 @@ export default class EditTemplateController {
                 if (row.name === rowName) continue
                 rowsToUpdate.push({id: row.id, name: rowName})
             } else {
-                rowsToAdd.push({name: rowName ?? CreateTemplatePageController.DEFAULT_ROW_NAMES[i]})
+                rowsToAdd.push({name: rowName ?? CreateTemplateController.DEFAULT_ROW_NAMES[i]})
             }
         }
 
@@ -342,7 +351,7 @@ export default class EditTemplateController {
         })
 
         setTimeout(() => {
-            window.location.href = Paths.EDIT_TEMPLATE.replace(":id", this.states.tierlistState.val!.id) + "?tab=3"
+            window.location.reload()
         }, 500)
 
 
@@ -351,7 +360,7 @@ export default class EditTemplateController {
     addRow = () => {
         const rowCount = this.states.numberOfRowsState.val
 
-        if (rowCount === CreateTemplatePageController.MAX_NUMBER_OF_ROWS) return toast.error(Texts.MAXIMUM_ROW_AMOUNT_ERROR, {
+        if (rowCount === CreateTemplateController.MAX_NUMBER_OF_ROWS) return toast.error(Texts.MAXIMUM_ROW_AMOUNT_ERROR, {
 
             action: {
                 label: Texts.OK,
@@ -364,20 +373,20 @@ export default class EditTemplateController {
         this.states.numberOfRowsState.set(this.states.numberOfRowsState.val + 1)
     }
 
-    removeRow = () => {
-        const rowCount = this.states.numberOfRowsState.val
+    removeRow = (index: number) => {
 
-        if (rowCount === CreateTemplatePageController.MIN_NUMBER_OF_ROWS) return toast.error(Texts.MINIMUM_ROW_AMOUNT_ERROR, {
+        const rowNames = Array.from({length: this.states.numberOfRowsState.val}, (_, i) => getTextFieldValue(`row-${i}`)!)
 
-            action: {
-                label: Texts.OK,
-                onClick: () => {
-                    toast.dismiss()
-                }
-            }
-        })
+        rowNames.splice(index, 1)
 
         this.states.numberOfRowsState.set(this.states.numberOfRowsState.val - 1)
+
+        for (const i of Array.from({length: this.states.numberOfRowsState.val}, (_, i) => i)) {
+            const textField = document.getElementById(`row-${i}`) as HTMLInputElement
+            textField.value = rowNames[i]
+        }
+
+
     }
 
     onFileUploadImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -389,6 +398,53 @@ export default class EditTemplateController {
 
         e.target.type = "text"
         e.target.type = "file"
+    }
+
+    saveChanges = async () => {
+
+        switch (this.states.currentTapState.val) {
+            case 0:
+                return this.onUpdateGeneralInformation()
+            case 1:
+                return this.onUpdateCover()
+            case 2:
+                return this.onUpdateImages()
+            case 3:
+                return this.onUpdateRows()
+        }
+
+    }
+
+
+    saveChangesButtonDisabled = () => {
+        switch (this.states.currentTapState.val) {
+            case 0:
+                const validName = this.states.tierlistNameState.val.trim().length > 3 && this.states.tierlistNameState.val.trim().length < 50
+
+                const validDescription = this.states.tierlistDescriptionState.val.trim().length > 9 && this.states.tierlistDescriptionState.val.trim().length < 500
+
+                const noChanges = this.states.tierlistNameState.val === this.states.tierlistState.val?.name &&
+                    this.states.tierlistDescriptionState.val === this.states.tierlistState.val?.description &&
+                    this.states.publicTemplateState.val === !!this.states.tierlistState.val?.public
+
+                return !validName || !validDescription || noChanges
+
+
+            case 1:
+                return !this.states.templateCoverImageToUpdateState.val
+
+            case 2:
+                // const noChanges = this.states.templateImagesToAddState.val.length === 0 && this.states.tierlistItemIdsToDeleteState.val.length === 0
+                // const itemsToDelete = this.states.tierlistItemIdsToDeleteState.val
+                //
+                // const imagesToAdd = this.states.templateImagesToAddState.val
+                //
+                // const currentItems = this.states.tierlistItemsState.val
+                //
+                // const newItemCount = currentItems.length + imagesToAdd.length - itemsToDelete.length
+                // return noChanges || newItemCount < 4 || newItemCount > 200 || imagesToAdd.length > 50
+                return false
+        }
     }
 
 

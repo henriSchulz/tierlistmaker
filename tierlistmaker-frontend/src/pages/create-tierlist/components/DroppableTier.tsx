@@ -7,9 +7,8 @@ import DraggableTierlistItem, {
 import {DragEvent, useState} from "react";
 import TierlistItem from "@/types/dbmodel/TierlistItem";
 import {motion} from "framer-motion";
-import CreateTemplatePageController from "@/pages/create-template/CreateTemplatePageController";
+import CreateTemplateController from "@/features/create-template/CreateTemplateController";
 import {isXsWindow} from "@/utils";
-import {Card} from "@/components/ui/card";
 
 
 interface DroppableTierProps {
@@ -146,13 +145,13 @@ export default function ({row, controller, color, handleDragStart, hideLabel, sh
     const filteredItems = controller.states.tierlistDataState.val!.filter((item) => item.rowId === row.id);
 
 
-    const boxSize = isXsWindow() ? 80 : 100;
+    const boxSize = isXsWindow() ? 80 : 108;
 
 
     return <motion.div
         layout layoutId={row.id}
     >
-        <div className="tier">
+        <div className={"tier"}>
             {!hideLabel && <div style={{
                 backgroundColor: color,
                 display: "grid",
@@ -164,16 +163,16 @@ export default function ({row, controller, color, handleDragStart, hideLabel, sh
                 borderBottomLeftRadius: "0.5rem",
                 borderTopLeftRadius: "0.5rem"
             }}
-                                className="overflow-hidden break-all p-2 font-bold text-center dark:text-black border tier-head">
-                {row && row.name.length > 0 ? row.name : CreateTemplatePageController.DEFAULT_ROW_NAMES[row.rowNumber]}
+                                className="overflow-hidden break-all p-2 font-bold text-center dark:text-black border-2 border-gray-100 tier-head">
+                {row && row.name.length > 0 ? row.name : CreateTemplateController.DEFAULT_ROW_NAMES[row.rowNumber]}
 
             </div>}
-            <Card
+            <div
                 onDrop={handleDragEnd}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 style={{minHeight: `${boxSize}px`}}
-                className={`w-full ${active ? "bg-gray-300/50" : "bg-gray-300/0"} flex flex-wrap ${!hideLabel && "tier-items"}`}>
+                className={`cursor-pointer ${!hideLabel && "rounded-2xl"} border-2 bg-white border-gray-100 w-full ${active ? "bg-gray-300/50" : "bg-gray-300/0"} flex flex-wrap ${!hideLabel && "tier-items"}`}>
                 {filteredItems.map((item, index) => {
                     return <DraggableTierlistItem
                         key={item.id}
@@ -184,7 +183,7 @@ export default function ({row, controller, color, handleDragStart, hideLabel, sh
                         controller={controller}/>
                 })}
                 <DropIndicator beforeId={null} rowId={row.id}/>
-            </Card>
+            </div>
 
         </div>
     </motion.div>

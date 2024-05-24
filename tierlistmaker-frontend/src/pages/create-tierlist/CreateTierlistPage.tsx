@@ -5,35 +5,21 @@ import TierlistRow from "@/types/dbmodel/TierlistRow";
 import CreateTierlistController from "@/pages/create-tierlist/CreateTierlistController";
 import TierlistItem from "@/types/dbmodel/TierlistItem";
 import {useNavigate, useParams} from "react-router-dom";
-import {Card, CardDescription, CardTitle} from "@/components/ui/card";
+
+import CustomButton from "@/components/custom/Button";
 import Texts from "@/text/Texts";
 import {Skeleton} from "@/components/ui/skeleton";
-import XLogo from "@/assets/X_logo_2023.svg";
-import RedditLogo from "@/assets/reddit.svg";
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import Paths from "@/Paths";
-import TextKeys from "@/text/TextKeys";
+
 import DroppableTier from "@/pages/create-tierlist/components/DroppableTier";
 
-import {Button} from "@/components/ui/button";
-import {Edit, Image, Share, ThumbsUp, Trash} from "lucide-react";
+import {Edit, Image, RotateCcw, Share, ThumbsUp, Trash} from "lucide-react";
 import DeleteTemplateController from "@/pages/create-tierlist/features/delete-template/DeleteTemplateController";
 import DeleteTemplateModal from "@/pages/create-tierlist/features/delete-template/DeleteTemplateModal";
 import AuthenticationService from "@/services/AuthenticationService";
-import {Switch} from "@/components/ui/switch";
-import {Label} from "@/components/ui/label";
 import {useAuthDone} from "@/App";
 
 import CopyToClipboard from "@/components/CopyToClipboard";
-import {Separator} from "@/components/ui/separator";
 
-import {useTheme} from "@/components/ThemeProvider";
 import Icon from "@/assets/icon.png"
 import ExportImageModalController from "@/pages/create-tierlist/features/export-image/ExportImageModalController";
 import ExportImageModal from "@/pages/create-tierlist/features/export-image/ExportImageModal";
@@ -42,13 +28,13 @@ import ShareTierlistController from "@/pages/create-tierlist/features/share-tier
 import ShareTierlistModal from "@/pages/create-tierlist/features/share-tierlist/ShareTierlistModal";
 import {Helmet} from "react-helmet";
 
-import {setClipboard} from "@/utils";
-import {toast} from "sonner";
 import MessageModalController from "@/controller/MessageModalController";
 import {Modal} from "@/components/ui/message-modal";
+import EditTemplateSheet from "@/features/edit-template/EditTemplateSheet";
+import SignInSheet from "@/features/sign-in/SignInSheet";
 
 
-const COLORS = ["#de3030", "#e07a34", "#e2c337", "#ffa05c", "#ffa05c", "#ff6e61", "#ff4284", "#d742a8"]
+const COLORS = ["#de3030", "#e07a34", "#e2c337", "#9dbd3d", "#40d6cf", "#3d9dbd", "#ab567e", "#db2b7d"]
 
 
 export default function CreateTierlistPage() {
@@ -72,8 +58,10 @@ export default function CreateTierlistPage() {
     const [showImageNames, setShowImageNames] = useState<boolean>(
         false
     )
+    const [showEditTemplateSheet, setShowEditTemplateSheet] = useState<boolean>(false)
     const [showImagesNamesModal, setShowImagesNamesModal] = useState<boolean>(false)
     const [isExporting, setIsExporting] = useState<boolean>(false)
+    const [showSignInSheet, setShowSignInSheet] = useState<boolean>(false)
 
     const authDone = useAuthDone()
 
@@ -94,6 +82,7 @@ export default function CreateTierlistPage() {
         }
     })
 
+
     const controller = new CreateTierlistController({
         states: {
             initDoneState: {val: initDone, set: setInitDone},
@@ -106,7 +95,8 @@ export default function CreateTierlistPage() {
             isLoadingState: {val: isLoading, set: setIsLoading},
             isExportingState: {val: isExporting, set: setIsExporting},
             showImagesNamesState: {val: showImageNames, set: setShowImageNames},
-            showImageNamesModalState: {val: showImagesNamesModal, set: setShowImagesNamesModal}
+            showImageNamesModalState: {val: showImagesNamesModal, set: setShowImagesNamesModal},
+            showSignInSheetState: {val: showSignInSheet, set: setShowSignInSheet}
         },
         navigate
     })
@@ -180,16 +170,25 @@ export default function CreateTierlistPage() {
 
     const isOwner = tierlist?.clientId === AuthenticationService.current?.id
 
-    const {theme} = useTheme()
+
+    return (<div>
+
+            {
+                showSignInSheet && <SignInSheet showState={{val: showSignInSheet, set: setShowSignInSheet}}/>
+            }
 
 
-    return (
-        <div>
             {showDeleteTemplateModal && <DeleteTemplateModal controller={deleteTemplateController}/>}
             {showExportImageModal && <ExportImageModal controller={exportImageController}/>}
             {showShareTierlistModal && <ShareTierlistModal controller={shareTierlistController}/>}
             {showImagesNamesModal && <Modal controller={showImageNamesController} title={Texts.SHOW_IMAGE_NAMES}
                                             message={Texts.SHOW_IMAGE_NAME_QUESTION}/>}
+
+            {
+                showEditTemplateSheet &&
+                <EditTemplateSheet id={tierlist!.id}
+                                   showState={{val: showEditTemplateSheet, set: setShowEditTemplateSheet}}/>
+            }
 
             <Helmet>
                 <title>{`${tierlist?.name} - Tierlistmaker`}</title>
@@ -198,72 +197,116 @@ export default function CreateTierlistPage() {
             <Box gridCenter id="t-c" className="select-none">
 
 
-                <Card className="lg:w-5/6 mt-10 p-4 mb-8 w-11/12 overflow-hidden">
+                <div className="max-w-screen-lg w-full p-4 mb-8 overflow-hidden">
 
-                    {initDone && tierlist && <Breadcrumb>
-                        <BreadcrumbList className="cursor-pointer select-text">
-                            <BreadcrumbItem>
-                                <BreadcrumbLink onClick={() => navigate(Paths.HOME)}>{Texts.HOMEPAGE}</BreadcrumbLink>
-                            </BreadcrumbItem>
-                            <BreadcrumbSeparator/>
-                            <BreadcrumbItem>
-                                <BreadcrumbLink
-                                    onClick={() => navigate(Paths.CATEGORIES)}>{Texts.CATEGORIES}</BreadcrumbLink>
-                            </BreadcrumbItem>
-                            <BreadcrumbSeparator/>
-                            <BreadcrumbItem>
-                                <BreadcrumbLink
-                                    onClick={() => navigate(Paths.CATEGORY.replace(":id", tierlist?.categoryId ?? ""))}>
-                                    {Texts.SELECTION_CATEGORIES[tierlist.categoryId as keyof TextKeys["SELECTION_CATEGORIES"]]}
-                                </BreadcrumbLink>
-                            </BreadcrumbItem>
-                        </BreadcrumbList>
-                    </Breadcrumb>}
+                    {/*{initDone && tierlist && <Breadcrumb>*/}
+                    {/*    <BreadcrumbList className="cursor-pointer select-text">*/}
+                    {/*        <BreadcrumbItem>*/}
+                    {/*            <BreadcrumbLink onClick={() => navigate(Paths.HOME)}>{Texts.HOMEPAGE}</BreadcrumbLink>*/}
+                    {/*        </BreadcrumbItem>*/}
+                    {/*        <BreadcrumbSeparator/>*/}
+                    {/*        <BreadcrumbItem>*/}
+                    {/*            <BreadcrumbLink*/}
+                    {/*                onClick={() => navigate(Paths.CATEGORIES)}>{Texts.CATEGORIES}</BreadcrumbLink>*/}
+                    {/*        </BreadcrumbItem>*/}
+                    {/*        <BreadcrumbSeparator/>*/}
+                    {/*        <BreadcrumbItem>*/}
+                    {/*            <BreadcrumbLink*/}
+                    {/*                onClick={() => navigate(Paths.CATEGORY.replace(":id", tierlist?.categoryId ?? ""))}>*/}
+                    {/*                {Texts.SELECTION_CATEGORIES[tierlist.categoryId as keyof TextKeys["SELECTION_CATEGORIES"]]}*/}
+                    {/*            </BreadcrumbLink>*/}
+                    {/*        </BreadcrumbItem>*/}
+                    {/*    </BreadcrumbList>*/}
+                    {/*</Breadcrumb>}*/}
+
+                    {/*{!initDone && <Skeleton className="w-1/2 h-[20px] rounded-full"/>}*/}
+
 
                     <Box className="w-full mb-8">
-                        {!initDone && <Skeleton className="w-[250px] h-[20px] rounded-full"/>}
 
 
-                        {initDone &&
-                            <Box className="mt-4 lg:flex lg:justify-between space-y-2">
-                                <CardTitle onClick={async () => {
-                                    await setClipboard(tierlist?.name ?? "")
-                                    toast.success(Texts.COPY_SUCCESSFUL)
-                                }}
-                                           className="text-4xl font-bold text-text">{tierlist?.name} {Texts.TIER_LIST}</CardTitle>
+                        <div className="mt-4">
+                            <div>
+                                {initDone && <p className="mb-3 font-semibold text-gray-400">{Texts.TIER_LIST}</p>}
 
-                                {tierlist?.showImageNames && <Box className="lg:ml-3 hidden md:block">
-                                    <div className="flex items-center">
-                                        <Switch checked={showImageNames} onCheckedChange={setShowImageNames}
-                                                id="show-image-names"/>
-                                        <Label className="ml-2"
-                                               htmlFor="show-image-names">{Texts.SHOW_IMAGE_NAMES + "?"}</Label>
+                                {
+                                    !initDone && <Skeleton className="mb-3 w-[70px] h-[20px] rounded-full"/>
+                                }
+
+                                <div className="lg:flex lg:justify-between space-y-2 items-center">
+                                    {initDone &&
+                                        <h1 className="flex items-start text-3xl font-bold leading-none text-gray-700">
+                                            {tierlist?.name}
+                                        </h1>}
+                                    {!initDone && <Skeleton className="lg:w-[550px] w-full h-[40px] rounded-full"/>}
+
+
+                                    <div className="md:flex md:justify-end grid gap-4">
+                                        {initDone && isOwner && <>
+                                            <CustomButton variant="tertiary" className="py-6"
+                                                          disabled={isLoading || !initDone}
+                                                          onClick={() => setShowEditTemplateSheet(true)}>
+                                                <Edit className="mr-2"/>
+                                                {Texts.EDIT}
+                                            </CustomButton>
+
+                                            <CustomButton variant="tertiary" className="py-6"
+                                                          disabled={isLoading || !initDone}
+                                                          onClick={deleteTemplateController.open}>
+                                                <Trash className="mr-2"/>
+                                                {Texts.DELETE}
+                                            </CustomButton>
+                                        </>}
+
+                                        <CustomButton variant="tertiary" className="py-6"
+                                                      disabled={isLoading || !initDone}
+                                                      onClick={controller.resetTierlist}>
+                                            <RotateCcw className="mr-2"/>
+                                            {Texts.RESET_TIERLIST}
+                                        </CustomButton>
                                     </div>
+                                </div>
 
-                                </Box>}
-                            </Box>}
+                            </div>
 
-                        {!initDone && <Skeleton className="lg:w-[550px] w-full h-[40px] rounded-full mt-4"/>}
+                            {/*{tierlist?.showImageNames && <Box className="lg:ml-3 hidden md:block">*/}
+                            {/*    <div className="flex items-center">*/}
+                            {/*        <Switch checked={showImageNames} onCheckedChange={setShowImageNames}*/}
+                            {/*                id="show-image-names"/>*/}
+                            {/*        <Label className="ml-2"*/}
+                            {/*               htmlFor="show-image-names">{Texts.SHOW_IMAGE_NAMES + "?"}</Label>*/}
+                            {/*    </div>*/}
+
+                            {/*</Box>}*/}
+                        </div>
+
 
                         <Box className="mt-4">
-                            {initDone && <Box className="md:flex md:justify-between grid">
-                                <CardDescription
-                                    className="select-text text-lg w-full md:w-9/12">{tierlist?.description}</CardDescription>
-                                <Box className="mt-2">
-                                    <Button variant="secondary" onClick={controller.toggleVoteTierlist}
-                                            disabled={isLoading || !initDone}>
-                                        <Box flexCenter>
-                                            <span className="mr-2 text-lg">{tierlistVotes}</span>
-
-                                            {isTierlistVoted ?
-                                                <ThumbsUp fill={theme === "dark" ? "white" : "black"}/>
-                                                : <ThumbsUp/>}
-                                        </Box>
-                                    </Button>
-                                </Box>
+                            {initDone && <div className="md:flex md:justify-between grid items-center">
 
 
-                            </Box>}
+                                <p dangerouslySetInnerHTML={{ // find links in description and make them clickable
+                                    __html: tierlist?.description?.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" class="text-primary font-bold" target="_blank">$1</a>') as string
+                                }}
+                                   className="mt-1 text-base font-medium text-gray-500 lg:text-xl">
+
+                                </p>
+
+
+                                <CustomButton className="mt-4 md:mt-0 md:ml-8" variant="secondary"
+                                              onClick={controller.toggleVoteTierlist}
+                                              disabled={isLoading || !initDone}>
+                                    <div className="flex">
+                                        <span className="mr-2 text-lg">{tierlistVotes}</span>
+
+
+                                        <ThumbsUp className={isTierlistVoted ? "fill-blue-500" : ""}/>
+
+                                    </div>
+                                </CustomButton>
+
+
+                            </div>}
 
                             {!initDone && <Skeleton className="lg:w-[700px] w-full h-[28px] rounded-full"/>}
                         </Box>
@@ -272,7 +315,7 @@ export default function CreateTierlistPage() {
 
                     <Box id="tierlist" className={`bg-white dark:bg-[#020817] select-none`}>
                         <Box>
-                            <Box id="tierlist-inner-container" className={"space-y-2 md:p-5"}>
+                            <Box id="tierlist-inner-container" className={"space-y-2"}>
 
                                 {isExporting && <Box className="grid lg:flex lg:justify-between items-center">
                                     <h3 className="ml-5 text-3xl font-bold items-center">{tierlist?.name}</h3>
@@ -336,79 +379,48 @@ export default function CreateTierlistPage() {
 
                     <Box className="grid items-center md:flex md:justify-center mt-8 w-full md:spacing-x-2">
 
-                        <Button onClick={() => exportImageController.open()} variant="secondary"
-                                className="py-7 px-5">
+                        <CustomButton onClick={() => exportImageController.open()} variant="secondary"
+                                      className="py-7 px-5">
                             <Image className="mr-2 w-8 h-8"/>
                             <span className="text-xl font-bold"> {Texts.DOWNLOAD_IMAGE}</span>
-                        </Button>
+                        </CustomButton>
 
-                        <Button onClick={() => shareTierlistController.open()} variant="secondary"
-                                className="py-7 px-5 md:ml-5 mt-2 md:mt-0">
+                        <CustomButton onClick={() => shareTierlistController.open()} variant="secondary"
+                                      className="py-7 px-5 md:ml-5 mt-2 md:mt-0">
                             <Share className="mr-2 w-8 h-8"/>
 
                             <span className="text-xl font-bold"> {Texts.SHARE_YOUR_RANKING}</span>
 
 
-                        </Button>
+                        </CustomButton>
 
 
                     </Box>
 
-                    <Box className="mt-8">
+                    <Box className="mt-16 w-full">
 
-                        <label className="text-lg font-bold mb-2">{Texts.SHARE_TEMPLATE}</label>
-                        <CopyToClipboard text={window.location.href}/>
-                        <label className="text-lg font-bold mb-4">{Texts.SHARE_DIRECTLY}</label>
-                        <Box flexSpaceBetween spacing={2} className="w-20 px-2">
+                        <p className="text-2xl font-bold leading-none text-gray-700 mb-4">{Texts.SHARE_TEMPLATE}</p>
+                        <div className="grid md:flex items-center md:justify-between w-full">
+                            <CopyToClipboard text={window.location.href}/>
 
-                            <img onClick={controller.onShareTwitter} alt="X"
-                                 className="cursor-pointer hover:scale-125 transition-transform" src={XLogo}
-                                 height={40} width={40}/>
-                            <img onClick={controller.onShareReddit} alt="Reddit"
-                                 className="cursor-pointer hover:scale-125 transition-transform"
-                                 src={RedditLogo} height={40} width={40}/>
+                            {/*<div className="flex justify-between mt-6 px-2 gap-10 flex">*/}
+                            {/*    <CustomButton variant="icon">*/}
+                            {/*        <img onClick={controller.onShareTwitter} alt="X"*/}
+                            {/*             src={XLogo}*/}
+                            {/*             height={40} width={40}/>*/}
+                            {/*    </CustomButton>*/}
+                            {/*    <CustomButton variant="icon">*/}
+                            {/*        <img onClick={controller.onShareReddit} alt="Reddit"*/}
+                            {/*             src={RedditLogo}*/}
+                            {/*             height={40} width={40}/>*/}
+                            {/*    </CustomButton>*/}
 
-
-                        </Box>
+                            {/*</div>*/}
+                        </div>
                     </Box>
 
 
-                    <Box className="mt-5">
-                        <Separator/>
-                        <Box className="md:flex md:justify-start grid mt-2">
-
-                            {initDone && isOwner && <>
-                                <Button className="mr-3" disabled={isLoading || !initDone}
-                                        onClick={() => navigate(Paths.EDIT_TEMPLATE.replace(":id", tierlist?.id ?? ""))}>
-                                    <Edit className="mr-2"/>
-                                    {Texts.EDIT}
-                                </Button>
-
-                                <Button disabled={isLoading || !initDone}
-                                        onClick={() => deleteTemplateController.open()}>
-                                    <Trash className="mr-2"/>
-                                    {Texts.DELETE}
-                                </Button>
-                            </>}
-
-                            <Button className="ml-3" disabled={isLoading || !initDone}
-                                    onClick={controller.resetTierlist}>
-                                {Texts.RESET_TIERLIST}
-                            </Button>
-
-
-                            {tierlist?.showImageNames && <div className="flex items-center md:hidden mt-4">
-                                <Switch checked={showImageNames} onCheckedChange={setShowImageNames}
-                                        id="show-image-names"/>
-                                <Label className="ml-2"
-                                       htmlFor="show-image-names">{Texts.SHOW_IMAGE_NAMES + "?"}</Label>
-                            </div>}
-
-
-                        </Box>
-                    </Box>
-
-                </Card>
+                </div>
 
             </Box>
         </div>

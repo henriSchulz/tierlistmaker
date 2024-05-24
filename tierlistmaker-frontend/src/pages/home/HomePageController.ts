@@ -7,6 +7,7 @@ import {firestore} from "@/config/firebaseConfig";
 import Tierlist from "@/types/dbmodel/Tierlist";
 import Vote from "@/types/dbmodel/Vote";
 
+
 interface HomePageControllerOptions {
     states: {
         mostVotedTierlistsState: State<LiteTierlist[]>
@@ -34,12 +35,16 @@ export default class HomePageController {
 
         const sortedTierlistVotes = Object.entries(tierlistVotes)
             .sort((a, b) => b[1] - a[1])
-            .slice(0, 5)
+            .slice(0, 9)
 
-        return sortedTierlistVotes.map(([tierlistId]) => ({
-            id: tierlistId,
-            name: tierlists.find(tierlist => tierlist.id === tierlistId)!.name
-        }))
+        return sortedTierlistVotes.map(([tierlistId]) => {
+            const tl = tierlists.find(tierlist => tierlist.id === tierlistId)
+            return {
+                id: tierlistId,
+                name: tl!.name,
+                categoryId: tl!.categoryId
+            }
+        })
     }
 
 
@@ -49,7 +54,7 @@ export default class HomePageController {
                 query(collection(firestore, "tierlists"),
                     where("public", "==", true),
                     orderBy("createdAt", "desc"),
-                    limit(5)
+                    limit(9)
                 )
             )
 
@@ -57,7 +62,8 @@ export default class HomePageController {
                 const data = doc.data() as Tierlist
                 return {
                     id: data.id,
-                    name: data.name
+                    name: data.name,
+                    categoryId: data.categoryId
                 }
             })
 
@@ -93,6 +99,7 @@ export default class HomePageController {
             this.states.mostVotedSportsTierlistsState.set(mostVotedSportsTierlists)
             this.states.mostVotedVideoGamesTierlistsState.set(mostVotedVideoGamesTierlists)
             this.states.recentlyCreatedTierlistsState.set(recentlyCreatedTierlists)
+
             this.states.initDoneState.set(true)
 
         } catch (e) {

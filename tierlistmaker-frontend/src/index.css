@@ -5,6 +5,7 @@
 
 @layer base {
     :root {
+
         --background: 0 0% 100%;
         --foreground: 222.2 84% 4.9%;
         --card: 0 0% 100%;
@@ -51,6 +52,11 @@
 }
 
 
+@font-face {
+    font-family: "Rubik";
+    src: url("assets/font.woff2") format("woff2");
+}
+
 @layer base {
     * {
         @apply border-border;
@@ -59,6 +65,7 @@
 
     body {
         @apply bg-background text-foreground;
+        font-family: Rubik;
     }
 }
 
@@ -176,6 +183,58 @@
     font-palette: --Blue;
     font-size: 1em;
     cursor: alias;
+}
+
+
+.button-secondary {
+    @apply block cursor-pointer text-center font-bold disabled:cursor-not-allowed
+    disabled:opacity-70 flex justify-center items-center border-2 border-blue-500
+    text-blue-500 text-base py-3 px-6 leading-none h-9 md:h-10 rounded-xl
+    leading-none;
+    user-select: none;
+}
+
+.button-primary {
+    @apply block cursor-pointer text-center font-bold disabled:cursor-not-allowed
+    disabled:opacity-70 flex justify-center items-center text-white bg-gray-800
+    text-base py-3 px-6 leading-none h-9 md:h-10 rounded-xl leading-none;
+    user-select: none;
+}
+
+.button-tertiary {
+    @apply flex items-center justify-center h-9 md:h-10 rounded-xl py-3 px-6 font-bold transition hover:bg-gray-100 bg-gray-100 text-gray-700;
+    user-select: none;
+}
+
+
+.button-text {
+    @apply block cursor-pointer text-center font-bold disabled:cursor-not-allowed
+    disabled:opacity-70 flex justify-center items-center text-gray-800
+    text-base py-3 px-6 leading-none h-9 md:h-10 rounded-xl leading-none;
+    user-select: none;
+}
+
+.button-icon {
+    @apply block cursor-pointer text-center font-bold disabled:cursor-not-allowed disabled:opacity-70 flex justify-center items-center text-gray-800 text-base leading-none h-9 md:h-10 rounded-xl leading-none;
+    user-select: none;
+}
+
+.tier-list-card {
+    @apply overflow-hidden rounded-2xl shadow-md [backface-visibility:hidden] relative;
+}
+
+
+.button-disabled {
+    @apply flex items-center justify-center rounded-xl py-3 px-6 font-bold transition hover:bg-gray-100 bg-white text-gray-400
+}
+
+.create-template-sheet {
+    @apply fixed inset-0 z-20 h-full w-full bg-white p-4;
+}
+
+.rounded-left-item {
+    border-top-left-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
 }
 
 

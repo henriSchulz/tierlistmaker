@@ -1,39 +1,27 @@
-import {Box} from "@/components/ui/box";
-import {Button} from "@/components/ui/button";
-import Texts from "@/text/Texts";
-import {Card} from "@/components/ui/card";
-import {ExternalLink} from "lucide-react";
+import {SendToBack} from "lucide-react";
 import LiteTierlist from "@/types/LiteTierlist";
 import {useNavigate} from "react-router-dom";
-import {PathUtils} from "@/Paths";
+
 import {useEffect, useState} from "react";
 import {Skeleton} from "@/components/ui/skeleton";
 import {getDownloadURL, ref} from "@firebase/storage";
 import {storage} from "@/config/firebaseConfig";
+import {motion} from "framer-motion";
+import {PathUtils} from "@/Paths";
+import {isXsWindow} from "@/utils";
 
 
 interface TierListCardProps {
     tierlist: LiteTierlist
 }
 
-const WIDTH = 250
-const HEIGHT = 250
+const HEIGHT = isXsWindow() ? 210 : 200
+
+const WIDTH = (16 / 10) * HEIGHT
+
 
 export function TierlistCardSkeleton() {
-    return <Card className="p-4 my-1">
-        <Box>
-
-            <Skeleton className="h-[20px] w-full"/>
-
-            <Skeleton className="mt-2" style={{width: WIDTH, height: HEIGHT}}/>
-
-            <Button disabled className="mt-3 w-full">
-                {Texts.RANK_NOW}
-                <ExternalLink className="ml-2 h-4 w-4"/>
-            </Button>
-
-        </Box>
-    </Card>
+    return <Skeleton className="rounded-2xl mx-auto sm:mx-0" style={{width: WIDTH, height: HEIGHT}}/>
 
 }
 
@@ -49,25 +37,40 @@ export default function ({tierlist}: TierListCardProps) {
         })
     }, [tierlist.id])
 
-    return <Card className="p-4">
-        <Box>
-            <h3 style={{maxWidth: WIDTH}}
-                className="font-bold text-lg overflow-hidden text-ellipsis grays">{tierlist.name}</h3>
+    return <motion.div whileHover={{scale: 0.97}} whileTap={{scale: 0.93}}
+                       className="tier-list-card mx-auto sm:mx-0" style={{width: WIDTH, height: HEIGHT}}
+                       transition={{duration: 0.2}}
+                       initial={{opacity: 0.5, scale: 0.90, translateZ: 10}}
+                       animate={{opacity: 1, scale: 1, translateZ: 0}}
+                       exit={{opacity: 0.5, scale: 0.9,}}
+                       onClick={() => navigate(PathUtils.getCreateTierlistPath(tierlist))}
 
-            <img draggable="false" width={WIDTH} className="aspect-square object-fill object-center selector"
-                 src={imgSrc}
-                 style={{display: imageLoaded ? 'block' : 'none'}}
-                 alt={tierlist.name}
-                 onLoad={() => setImageLoaded(true)}
-            />
+    >
 
-            {!imageLoaded && <Skeleton style={{width: WIDTH, height: HEIGHT}}/>}
+        <img draggable="false" className={`w-full md:w-[${WIDTH}px] h-full aspect-video object-fill object-center selector`}
+             src={imgSrc}
+             style={{display: imageLoaded ? 'block' : 'none'}}
+             alt={tierlist.name}
+             onLoad={() => setImageLoaded(true)}
+        />
 
-            <Button onClick={() => navigate(PathUtils.getCreateTierlistPath(tierlist))} className="mt-3 w-full">
-                {Texts.RANK_NOW}
-                <ExternalLink className="ml-2 h-4 w-4"/>
-            </Button>
+        {!imageLoaded && <Skeleton className="rounded-2xl" style={{width: WIDTH, height: HEIGHT}}/>}
 
-        </Box>
-    </Card>
+        <motion.div whileHover={{scale: 0.97}}
+                    className="leading-2 absolute left-3 bottom-3 right-3 mt-2 flex w-fit max-w-[calc(100%-24px)] items-center rounded-lg bg-white px-3 py-1 font-medium text-gray-700 shadow-sm">
+            <div onClick={() => navigate(PathUtils.getCreateTierlistPath(tierlist))}
+
+                 className="inline-block h-[1em] w-[1em] leading-none mr-1">
+                <p className="inline-block h-[1em] w-[1em] leading-none [&amp;_svg]:h-[1em] [&amp;_svg]:w-[1em]">
+                    <SendToBack className="h-[1em] w-[1em]"/>
+                </p>
+            </div>
+
+            <p className="truncate select-none">{tierlist.name}</p>
+
+
+        </motion.div>
+
+
+    </motion.div>
 }

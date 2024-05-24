@@ -49,6 +49,7 @@ export default class AppController {
                 return {
                     id: tl.id,
                     name: tl.name,
+                    categoryId: tl.categoryId,
                 }
             })
 

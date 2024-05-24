@@ -28,6 +28,7 @@ export interface CreateTierlistControllerOptions {
         isExportingState: State<boolean>
         showImagesNamesState: State<boolean>
         showImageNamesModalState: State<boolean>
+        showSignInSheetState: State<boolean>
     },
     navigate: NavigateFunction
 }
@@ -69,8 +70,15 @@ export default class CreateTierlistController {
         try {
             const tierlistDoc = await getDoc(doc(firestore, "tierlists", tierlistId))
             tierlist = tierlistDoc.data() as Tierlist
-            if (!tierlist) return this.navigate(Paths.NOT_FOUND)
-            if (!tierlist.public) return this.navigate(Paths.NOT_FOUND)
+            if (!tierlist){
+                console.log("Navigating back bc tierlist is null")
+                return this.navigate(Paths.NOT_FOUND)
+
+            }
+            if (!tierlist.public && AuthenticationService.current?.id !== tierlist.clientId) {
+                console.log("Navigating back bc tierlist is not public")
+                return this.navigate(Paths.NOT_FOUND)
+            }
 
         } catch (e) {
             console.log("ERROR: ", e)
@@ -85,6 +93,7 @@ export default class CreateTierlistController {
 
 
         } catch (e) {
+            console.log("ERROR: ", e)
             return this.navigate(Paths.NOT_FOUND)
         }
 
@@ -94,6 +103,7 @@ export default class CreateTierlistController {
             const snapshot = await getDocs(q)
             tierlistItems = snapshot.docs.map(doc => doc.data() as TierlistItem)
         } catch (e) {
+            console.log("ERROR: ", e)
             return this.navigate(Paths.NOT_FOUND)
         }
 
@@ -103,6 +113,7 @@ export default class CreateTierlistController {
             const snapshot = await getCountFromServer(q)
             votes = snapshot.data().count
         } catch (e) {
+            console.log("ERROR: ", e)
             return this.navigate(Paths.NOT_FOUND)
         }
 
@@ -116,6 +127,7 @@ export default class CreateTierlistController {
                 this.states.isTierlistVotedState.set(count > 0)
             }
         } catch (e) {
+            console.log("ERROR: ", e)
             return this.navigate(Paths.NOT_FOUND)
         }
 
@@ -255,7 +267,7 @@ export default class CreateTierlistController {
             return toast.error(Texts.NEED_TO_BE_SIGNED_IN_TO_VOTE, {
                 action: {
                     label: Texts.SIGN_IN,
-                    onClick: () => this.navigate(Paths.SIGN_IN + "?redirect=" + window.location.pathname)
+                    onClick: () => this.states.showSignInSheetState.set(true)
                 }
             })
 
@@ -329,6 +341,15 @@ export default class CreateTierlistController {
         const newTierlistData = tierlistItems.map(item => ({...item, rowId: "default"}))
 
         this.states.tierlistDataState.set(newTierlistData)
+    }
+
+    moveToDefault(itemId: string) {
+        const tierlistData = this.states.tierlistDataState.val
+        if (!tierlistData) return
+        const item = tierlistData.find(item => item.id === itemId)
+        if (!item) return
+        item.rowId = "default"
+        this.states.tierlistDataState.set([...tierlistData])
     }
 
 

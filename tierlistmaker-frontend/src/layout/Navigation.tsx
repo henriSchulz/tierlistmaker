@@ -1,4 +1,4 @@
-import {CircleUser, LogIn, LogOut, Menu, MessageCircleQuestion, Settings, Tornado, User} from "lucide-react";
+import {BadgePlus, CircleUser, LogIn, LogOut, Menu, MessageCircleQuestion, Settings, User} from "lucide-react";
 import Texts from "@/text/Texts";
 import {SheetContent, SheetTrigger, Sheet} from "@/components/ui/sheet";
 import {Button} from "@/components/ui/button";
@@ -10,9 +10,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {Box} from "@/components/ui/box";
 
-
+import Icon from "@/assets/icon.png";
 import {
     CommandDialog, CommandEmpty,
     CommandGroup,
@@ -21,14 +20,16 @@ import {
     CommandList, CommandSeparator,
 } from "@/components/ui/command"
 import {useEffect, useState} from "react";
-import {useNavigate, useLocation} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import Paths, {PathUtils} from "@/Paths";
 import LiteTierlist from "@/types/LiteTierlist";
 import AuthenticationService from "@/services/AuthenticationService";
-import {ModeToggle} from "@/components/ModeToggle";
+
 import SupportModalController from "@/features/support-modal/SupportModalController";
 import SupportModal from "@/features/support-modal/SupportModal";
-
+import CustomButton from "@/components/custom/Button";
+import CreateTemplateSheet from "@/features/create-template/CreateTemplateSheet";
+import SignInSheet from "@/features/sign-in/SignInSheet";
 
 interface NavigationProps {
     searchTierlists: LiteTierlist[]
@@ -41,6 +42,8 @@ export default function ({searchTierlists}: NavigationProps) {
 
     const [showSheet, setShowSheet] = useState(false)
     const [showSupportModal, setShowSupportModal] = useState(false)
+    const [showCreateTemplateSheet, setShowCreateTemplateSheet] = useState<boolean>(false)
+    const [showSignInSheet, setShowSignInSheet] = useState<boolean>(false)
 
     const navigate = useNavigate()
 
@@ -63,35 +66,30 @@ export default function ({searchTierlists}: NavigationProps) {
     }, [])
 
 
-    const location = useLocation()
-
-
     return <div>
+
+        {
+            showSignInSheet && <SignInSheet showState={{val: showSignInSheet, set: setShowSignInSheet}}/>
+        }
+
 
         {showSupportModal && <SupportModal controller={supportModalController}/>}
 
-        <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+        {showCreateTemplateSheet &&
+            <CreateTemplateSheet showState={{val: showCreateTemplateSheet, set: setShowCreateTemplateSheet}}/>}
+
+        <header
+            className="sticky top-0 flex h-16 items-center gap-4 border-b border-b-gray-100 py-3 px-4 md:px-6 max-w-screen-lg m-auto">
             <nav
                 className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
-                <a
-                    href="/"
-                    className="flex items-center gap-2 text-lg font-semibold md:text-base"
+                <CustomButton onClick={() => navigate(Paths.HOME)}
+                              variant="text"
+                              className="flex items-center gap-2 text-lg font-semibold md:text-base"
                 >
-                    <Tornado className="h-6 w-6"/>
-                    <span>{Texts.TIERLISTMAKER}</span>
-                </a>
+                    <img src={Icon} alt="Tierlistmaker.org Icon" className="h-10 w-10"/>
+                    <span className="font-bold text-2xl text-gray-800 tracking-wider">{Texts.TIERLISTMAKER}</span>
+                </CustomButton>
 
-                <a
-                    onClick={() => navigate(Paths.HOME)}
-                    className="text-foreground transition-colors hover:text-foreground cursor-pointer"
-                >
-                    {Texts.HOMEPAGE}
-                </a>
-
-                <a onClick={() => navigate(Paths.CATEGORIES)}
-                   className="text-foreground transition-colors hover:text-foreground cursor-pointer">
-                    {Texts.CATEGORIES}
-                </a>
 
             </nav>
             <Sheet open={showSheet} onOpenChange={setShowSheet}>
@@ -107,13 +105,13 @@ export default function ({searchTierlists}: NavigationProps) {
                 </SheetTrigger>
                 <SheetContent side="left">
                     <nav className="grid gap-6 text-lg font-medium">
-                        <a
-                            href="/"
-                            className="flex items-center gap-2 text-lg font-semibold md:text-base"
+                        <CustomButton onClick={() => navigate(Paths.HOME)}
+                                      variant="text"
+                                      className="flex items-center gap-2 text-lg font-semibold md:text-base"
                         >
-                            <Tornado className="h-6 w-6"/>
-                            <span>{Texts.TIERLISTMAKER}</span>
-                        </a>
+                            <img src={Icon} alt="Tierlistmaker.org Icon" className="h-10 w-10"/>
+                            <span className="font-bold text-2xl text-gray-800 tracking-wider">{Texts.TIERLISTMAKER}</span>
+                        </CustomButton>
 
                         <a
                             onClick={() => {
@@ -126,22 +124,14 @@ export default function ({searchTierlists}: NavigationProps) {
                             {Texts.HOMEPAGE}
                         </a>
 
-                        <a onClick={() => {
-                            navigate(Paths.CATEGORIES)
-                            setShowSheet(false)
-                        }}
-                           className="text-foreground transition-colors hover:text-foreground cursor-pointer">
-                            {Texts.CATEGORIES}
-                        </a>
-
-                        <Button disabled={location.pathname == Paths.CREATE_TEMPLATE}
-                                onClick={() => {
-                                    setShowSheet(false)
-                                    navigate(Paths.CREATE_TEMPLATE)
-                                }
-                                }>
+                        <CustomButton disabled={location.pathname == Paths.CREATE_TEMPLATE}
+                                      onClick={() => {
+                                          setShowSheet(false)
+                                          navigate(Paths.CREATE_TEMPLATE)
+                                      }
+                                      }>
                             {Texts.CREATE_A_TEMPLATE}
-                        </Button>
+                        </CustomButton>
                     </nav>
                 </SheetContent>
             </Sheet>
@@ -149,34 +139,44 @@ export default function ({searchTierlists}: NavigationProps) {
             <div className="flex items-center gap-4 md:ml-auto md:gap-2 lg:gap-4 w-full">
 
 
-                <Button disabled={location.pathname == Paths.CREATE_TEMPLATE}
-                        onClick={() => navigate(Paths.CREATE_TEMPLATE)}
-                        className="hidden md:flex ml-auto ">
+                <CustomButton variant="tertiary" //disabled={location.pathname == Paths.CREATE_TEMPLATE}
+                              onClick={() => {
+                                  if (AuthenticationService.current) {
+                                      setShowCreateTemplateSheet(true)
+                                  } else {
+                                      setShowSignInSheet(true)
+                                  }
+                              }}
+                              className="hidden md:flex ml-auto">
+                    <BadgePlus className="h-4 w-4 mr-2"/>
                     {Texts.CREATE_A_TEMPLATE}
-                </Button>
+                </CustomButton>
 
                 <div className="flex-1 sm:flex-initial">
 
-                    <Box className="flex-1 md:w-full md:flex-none">
-                        <Button onClick={() => setOpen(true)}
-                                className="inline-flex items-center whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input hover:bg-accent hover:text-accent-foreground px-4 py-2 relative h-9 w-full justify-start rounded-[0.5rem] bg-background text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-40 lg:w-64">
-                            <span className="hidden lg:inline-flex">{Texts.SEARCH_TIER_LISTS}</span>
+                    <div className="flex-1 md:w-full md:flex-none">
+                        <CustomButton variant="tertiary" onClick={() => setOpen(true)}
+                                      className="inline-flex items-center whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input hover:bg-accent hover:text-accent-foreground px-4 py-2 relative h-9 w-full justify-start rounded-[0.5rem] bg-background text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-40 lg:w-64">
+                            <span className="hidden lg:inline-flex font-bold">{Texts.SEARCH_TIER_LISTS}</span>
                             <span className="inline-flex lg:hidden">{Texts.SEARCH}</span>
                             <kbd
                                 className="pointer-events-none absolute right-[0.3rem] top-[0.3rem] hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex"><span
                                 className="text-xs">⌘</span>K</kbd>
-                        </Button>
+                        </CustomButton>
 
-                    </Box>
+                    </div>
                 </div>
                 {AuthenticationService.current && <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="secondary" size="icon" className="rounded-full">
-                            <CircleUser className="h-5 w-5"/>
+                        <div>
+                            <CustomButton variant="icon" className="rounded-full">
+                                {/*<CircleUser className="h-5 w-5"/>*/}
 
-                            {/*<img className="h-5 w-5" src={AuthenticationService.current.imgUrl}/>*/}
+                                <img referrerPolicy="no-referrer" className="w-full h-full rounded-full"
+                                     src={AuthenticationService.current.imgUrl}/>
 
-                        </Button>
+                            </CustomButton>
+                        </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>{Texts.MY_ACCOUNT}</DropdownMenuLabel>
@@ -210,10 +210,9 @@ export default function ({searchTierlists}: NavigationProps) {
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>{Texts.MY_ACCOUNT}</DropdownMenuLabel>
                             <DropdownMenuSeparator/>
-                            <DropdownMenuItem onClick={() => navigate(Paths.SIGN_IN)}>
+                            <DropdownMenuItem onClick={() => setShowSignInSheet(true)}>
                                 <LogIn className="h-4 w-4 mr-2"/>
                                 {Texts.SIGN_IN}
-
                             </DropdownMenuItem>
 
 
@@ -222,7 +221,7 @@ export default function ({searchTierlists}: NavigationProps) {
                     </DropdownMenu>
                 }
 
-                <ModeToggle/>
+                {/*<ModeToggle/>*/}
             </div>
 
         </header>

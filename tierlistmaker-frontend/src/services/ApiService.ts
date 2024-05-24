@@ -38,14 +38,14 @@ export default class ApiService {
             method: "POST",
             token: AuthenticationService.current?.token,
             headers: {
-                "Content-Type": "multipart/form-data",
+                "Content-Type": "multipart/form-data; charset=utf-8",
             },
             body: {
                 name,
                 description,
                 categoryId,
-                publicTemplate,
-                showImageNames,
+                publicTemplate: publicTemplate ? "true" : "false",
+                showImageNames: showImageNames ? "true" : "false",
                 coverImg,
                 templateImgs,
                 rowNames: JSON.stringify(rowNames),
@@ -180,6 +180,7 @@ export default class ApiService {
                 return {
                     name: data.name,
                     id: data.id,
+                    categoryId: data.categoryId,
                 }
             })
 

@@ -5,7 +5,7 @@ import {Box} from "@/components/ui/box";
 import {DragEvent} from "react";
 
 import {motion} from "framer-motion";
-import CreateTemplatePageController from "@/pages/create-template/CreateTemplatePageController";
+import CreateTemplateController from "@/features/create-template/CreateTemplateController";
 import SharedTierlistController from "@/pages/shared/SharedTierlistController";
 import TierlistItem from "@/pages/shared/components/TierlistItem";
 import TTierlistItem from "@/types/dbmodel/TierlistItem";
@@ -43,7 +43,7 @@ export default function ({row, controller, color, hideLabel, showImageNames}: Ti
                 alignItems: "center"
             }}
                                 className="w-32 max-w-32 overflow-hidden break-all border-r p-2 font-bold rounded text-center min-h-[100px] dark:text-black">
-                {row && row.name.length > 0 ? row.name : CreateTemplatePageController.DEFAULT_ROW_NAMES[row.rowNumber]}
+                {row && row.name.length > 0 ? row.name : CreateTemplateController.DEFAULT_ROW_NAMES[row.rowNumber]}
 
             </div>}
             <Box

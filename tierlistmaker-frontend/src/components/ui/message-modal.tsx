@@ -1,14 +1,6 @@
 import ModalController, {ModalControllerOptions} from "@/controller/abstract/ModalController";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
 
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import CustomButton from "@/components/custom/Button"
 
 
 import Texts from "@/text/Texts";
@@ -20,25 +12,30 @@ interface MessageModalProps {
 
     cancelButtonText?: string
     confirmButtonText?: string
+
+    showCancelButton?: boolean
 }
+
+import {Modal as OModal} from "@/components/ui/modal";
 
 
 const Modal = (props: MessageModalProps) => {
-    return <AlertDialog open={props.controller.states.showState.val}
-                        onOpenChange={props.controller.states.showState.set}>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-                <AlertDialogTitle>{props.title}</AlertDialogTitle>
-            </AlertDialogHeader>
-            <div className="text-lg" dangerouslySetInnerHTML={{__html: props.message}}/>
-            <AlertDialogFooter>
-                <AlertDialogCancel
-                    onClick={props.controller.close}>{props.cancelButtonText || Texts.CANCEL}</AlertDialogCancel>
-                <AlertDialogAction
-                    onClick={props.controller.submit}>{props.confirmButtonText || Texts.CONFIRM}</AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
-    </AlertDialog>
+    return <OModal hideFooter title={props.title} controller={props.controller}>
+
+
+        <div className="p-4" dangerouslySetInnerHTML={{__html: props.message}}>
+
+        </div>
+
+
+        <div className="flex w-full justify-end gap-3">
+            {props.showCancelButton && <CustomButton variant="tertiary"
+                                                     onClick={props.controller.close}>{props.cancelButtonText || Texts.CANCEL}</CustomButton>}
+            <CustomButton variant="secondary"
+                          onClick={props.controller.submit}>{props.confirmButtonText || Texts.OK}</CustomButton>
+        </div>
+
+    </OModal>
 
 }
 

@@ -1,12 +1,11 @@
 import ModalController, {ModalControllerOptions} from "@/controller/abstract/ModalController";
 import {
     Dialog,
-    DialogContent, DialogFooter,
+    DialogContent,
     DialogHeader,
-    DialogTitle,
 } from "@/components/ui/dialog"
 import React from "react";
-import {Button} from "@/components/ui/button";
+
 
 interface ModalProps {
     controller: ModalController<ModalControllerOptions>
@@ -17,20 +16,15 @@ interface ModalProps {
 }
 
 
-const Modal = ({controller, title, children, hideFooter, modal}: ModalProps) => {
+const Modal = ({controller, title, children, modal}: ModalProps) => {
     return <Dialog modal={modal} open={controller.states.showState.val} onOpenChange={controller.states.showState.set}>
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>{title}</DialogTitle>
+                <div className="text-3xl font-bold leading-none text-gray-700">{title}</div>
             </DialogHeader>
 
             {children}
 
-            {!hideFooter && <DialogFooter>
-                <Button type="submit">Save changes</Button>
-
-
-            </DialogFooter>}
         </DialogContent>
     </Dialog>
 }

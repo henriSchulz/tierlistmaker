@@ -43,7 +43,7 @@ export default class AuthenticationService {
     public static async signInWithGoogle(redirectUrl?: string | null): Promise<void> {
         await signInWithPopup(auth, provider)
         await wait(100)
-        window.location.href = redirectUrl ?? Paths.HOME
+        window.location.href = redirectUrl ?? window.location.href
     }
 
     public static async signInWithEmailPassword(email: string, password: string): Promise<void> {

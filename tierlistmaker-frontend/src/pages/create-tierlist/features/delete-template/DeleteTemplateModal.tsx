@@ -9,7 +9,7 @@ interface DeleteTemplateModalProps {
 export default function ({controller}: DeleteTemplateModalProps) {
 
 
-    return <Modal confirmButtonText={Texts.DELETE} controller={controller} title={Texts.DELETE_TEMPLATE + "?"}
+    return <Modal showCancelButton confirmButtonText={Texts.DELETE} controller={controller} title={Texts.DELETE_TEMPLATE + "?"}
                   message={Texts.DELETE_TEMPLATE_MESSAGE}/>
 
 
