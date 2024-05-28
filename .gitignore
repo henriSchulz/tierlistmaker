@@ -15,6 +15,8 @@ tierlistmaker-backend/functions/node_modules/
 tierlistmaker-backend/functions/src/public/
 tierlistmaker-backend/functions/src/keys/
 tierlistmaker-backend/functions/src/dynamic-meta-public/
+tierlistmaker-backend/functions/copyTemplate.js
+tierlistmaker-backend/functions/downloadCategoryImages.js
 
 *.local
 package-lock.json
